@@ -25,9 +25,7 @@ body.waiting * { cursor: wait; }
 a {
     text-decoration: none;
 }
-pre {
-    font-family: inherit;
-}
+
 #loading_div{
     position: absolute;
     top: 0px;
@@ -75,6 +73,7 @@ pre {
     position: absolute;
     overflow: hidden;
 }
+
 #theMap_primary, #theMap_secondary {
     -webkit-transform: translate3d(0px, 0px, 0px);
     position:absolute;
@@ -278,11 +277,11 @@ pre {
     font-family: inherit;
 }
 
-.markerTextDiv { /*pre-wrap preserves carriage returns*/
-   white-space: pre-wrap;      /* CSS3 */   
-   white-space: -moz-pre-wrap; /* Firefox */ 
-   white-space: -pre-wrap;     /* Opera <7 */   
-   white-space: -o-pre-wrap;   /* Opera 7 */    
+.markerTextDiv { /*pre preserves carriage returns*/
+   white-space: pre;      /* CSS3 */   
+   white-space: -moz-pre; /* Firefox */ 
+   white-space: -pre;     /* Opera <7 */   
+   white-space: -o-pre;   /* Opera 7 */    
    word-wrap: break-word;      /* IE */
    overflow-wrap: break-word;
 }
