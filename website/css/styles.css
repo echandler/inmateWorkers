@@ -25,6 +25,9 @@ body.waiting * { cursor: wait; }
 a {
     text-decoration: none;
 }
+pre {
+    font-family: inherit;
+}
 #loading_div{
     position: absolute;
     top: 0px;
