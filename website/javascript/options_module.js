@@ -61,16 +61,17 @@ window.options_module = function(){
     //TODO: make a private_makeSmallerUrl that knocks the decimal places off the coordinates.
     var private_makeUrl = function (){
         var json = { mr: [] ,x: 0 ,mx: 0 ,my: 0 ,z: 0 },
-            url = undefined;
+            url = undefined,
+            markersArray = document.querySelectorAll('div.markerParent');
             
-        this.markersArray.forEach( function( marker ){
-           json.mr.push({   a: marker.apn || '',
-                            x: marker.statePlaneCoordX,
-                            y: marker.statePlaneCoordY,
-                            m: marker.message,
-                            i: marker.imgUrl
+        for( var m = 0; m < markersArray.length; ++m ){
+           json.mr.push({   a: markersArray[m].apn || '',
+                            x: markersArray[m].statePlaneCoordX,
+                            y: markersArray[m].statePlaneCoordY,
+                            m: markersArray[m].message,
+                            i: markersArray[m].imgUrl
                         });
-        } );
+        }
         json.x  = this.presentMinX;
         json.mx = this.presentMaxX;
         json.y  = this.presentMinY;
