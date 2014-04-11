@@ -3,15 +3,15 @@ var // TODO: Only parameters or default values should go in parameters.
     parameters = {
                     //http://korz.tomodo.me/ 
                     //http://192.168.56.1:1000?
-        urlPrefix: 'http://korz.tomodo.me/',
-        apnUrl: 'https://www.snoco.org/proptax/search.aspx?parcel_number=',
-        searchByApnUrl: "http://gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.1&Form=True&Encode=False&CustomService=Query",
-        mapUrl: "http://gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.4.1&Form=True&Encode=False?",    
-        propertyInfoUrl: "http://gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.0&Form=True&Encode=False&CustomService=Query",
-        propertyImgUrl : "http://www.snoco.org/docs/sas/photos/",
+        urlPrefix: 'http://forwarding-proxy.appspot.com/',
+        apnUrl: 'www.snoco.org/proptax/search.aspx?parcel_number=',
+        searchByApnUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.1&Form=True&Encode=False&CustomService=Query",
+        mapUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.4.1&Form=True&Encode=False?",    
+        propertyInfoUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.0&Form=True&Encode=False&CustomService=Query",
+        propertyImgUrl : "www.snoco.org/docs/sas/photos/",
         optionsCheckMarkDefaults: { 
             showCities_CheckMark        : true, 
-            showSatelliteView_CheckMark : true,
+            showSatelliteView_CheckMark : false,
             show2007YearMap_CheckMark   : false,
             show2012YearMap_CheckMark   : true,
             showPropertyImage_CheckMark : false, 
@@ -34,7 +34,7 @@ var // TODO: Only parameters or default values should go in parameters.
     }, 
     $ = document.getElementById.bind( document ),
     theMap = window.$( 'theMap_primary' ),
-    xmlhttp = new XMLHttpRequest(),
+    mainAjaxHTTPRequest = new XMLHttpRequest(),
     timeToLoadArray = [], // Used to calculate panning duration.
     startSend = undefined, // Used to calculate panning duration.
     
