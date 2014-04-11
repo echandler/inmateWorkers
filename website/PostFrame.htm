@@ -4,6 +4,7 @@
     <title>SnoCo Interactive Map</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <!--<script src="javascript/tomodo.korz-0.5.js"></script> -->
 </head>
 <body >
 <div id="zoom_control">
@@ -33,7 +34,10 @@
     <img id="theMap_primary" >
         <img id="theMap_secondary" style="z-index: -1;" src="">
     <div id='theMap_misc_container' style='position:absolute;'>
-        <svg id='cities_svg' xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="position: absolute; top: 0px; left: 0px; width: 10000000px; height: 100000px"></svg>
+        <svg id='svg_container' xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="position: absolute; top: 0px; left: 0px; width: 10000000px; height: 100000px">
+            <path d=''></path>
+            <g id='cities_group'></g>
+        </svg>
     </div>
 </div>
 </div>
@@ -183,9 +187,19 @@
                     <button id="update_button">Save and Update</button>
                 </td>
             </tr>
+            <tr class='checkboxRow'>
+                <td class='checkboxTd'>
+                    <div id='drawLine_CheckBox' class='checkBox'>
+                        <div id='drawLine_CheckMark' class='checkMark dontChangeState'> 
+                            &#10003;
+                        </div>
+                    </div>
+                </td>
+                <td class='labelTd' id='drawLine_Label'>Draw A Line</td>
+            </tr>
             <tr>
                 <td colspan= '4' rowspan='1'>
-                    <table style='background-color: rgba(220, 220, 220, 0.4); padding: 0px 5px 0px 5px; margin-top: 4px'>
+                    <table style='background-color: rgba(220, 220, 220, 0.4); padding: 0px 5px 0px 5px;'>
                         <tr>
                             <td style="width: 40%; padding-left: 5px;">
                          <!-- TODO: The cursor shouldn't be a pointer by default. -->
@@ -259,7 +273,7 @@
         <path stroke="green" stroke-width="6" d="M70 53 L70 35 L55 35 L70 10 L85 35 L75 35"/>
     </g>
     </svg> 
-    <span id='mini_footer_span'>2014 Open Source Software Not Associated with Snohomish County In Any Way | </span>
+    <span id='mini_footer_span'>2014 Snohomish County | </span>
         <a href="http://gis.snoco.org/maps/property/disclaimer.htm">Disclaimer</a> | 
         <a href="http://www.snohomishcountywa.gov/175/Assessor">Assessor Home</a>
     </div>
@@ -275,6 +289,7 @@
     <script type="text/javascript" src='javascript/smallCountySvg_module.js' ></script>
     <script type="text/javascript" src='javascript/scaleBarSvg_module.js' ></script>
     <script type="text/javascript" src='javascript/overLayMap_module.js' ></script>
+    <script type="text/javascript" src='javascript/drawSvgLine_module.js' ></script>
     <script type="text/javascript" src='javascript/main.js' ></script>
     <!-- TODO: <iframe onload='iframeLoadHandler();' id='iframe' src='http://gis.snoco.org/maps/property/addmatch.htm' height='700' width='500'> -->
 </body>

@@ -8,7 +8,7 @@ var // TODO: Only parameters or default values should go in parameters.
         searchByApnUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.1&Form=True&Encode=False&CustomService=Query",
         mapUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.4.1&Form=True&Encode=False?",    
         propertyInfoUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.0&Form=True&Encode=False&CustomService=Query",
-        propertyImgUrl : "www.snoco.org/docs/sas/photos/",
+        propertyImgUrl : "http://www.snoco.org/docs/sas/photos/",
         optionsCheckMarkDefaults: { 
             showCities_CheckMark        : true, 
             showSatelliteView_CheckMark : false,

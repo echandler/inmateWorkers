@@ -50,7 +50,7 @@ window.marker_module = function(){
     var makeMarker = function( e, arg_infoObject ){
         // TODO: Are all these var's necessary?
         // Don't set a marker if the map is not zoomed in enough, default is 100;
-        if ( this.sliderPosition > 120 && !arg_infoObject ){ return; }
+        if ( (this.sliderPosition > 120 && !arg_infoObject) || ( e && e.target.nodeName === 'circle' ) ){ return; }
         var infoObject = arg_infoObject || false; //{"a": "apn number goes here","x": lat,"y": lng,"m":"text message","i":"img url"}
         var statePlaneCoordsXY = !infoObject && utilities_module.convertMouseCoordsToStatePlane( e );
         var xMultiplier = ( this.presentMaxX - this.presentMinX ) / this.resizedMapWidth;
@@ -601,7 +601,7 @@ window.marker_module = function(){
     }
 
     function deleteAllMarkers(){
-        var markerArray = document.querySelectorAll('.markerParent, .smallCountyMarker'),
+        var markerArray = document.querySelectorAll('div.markerParent, path.smallCountyMarker'),
             len = markerArray.length,
             i = 0;
 

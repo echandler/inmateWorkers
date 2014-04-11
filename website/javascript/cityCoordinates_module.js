@@ -1,6 +1,7 @@
     cityCoordinates_module = function(){
-    
-    var private_citiesPolylineElementsArray = []; // This gets populated by private_addPolyLinesToSvgElement().
+    var svg_container = window.$( 'svg_container' ),
+        citiesGroup = window.$( 'cities_group' );
+        private_citiesPolylineElementsArray = []; // This gets populated by private_addPolyLinesToSvgElement().
 
     function collectStatePlaneCoords(e){
         if( !window.points ){ window.points = []; }
@@ -37,7 +38,7 @@
                 //TODO: This has to go outside of the module then get the city.
                 resizeSVGElement( private_citiesPolylineElementsArray[i] );
             }
-        }.bind( { theMap: window.theMap, container: window.$('cities_svg') } );
+        }.bind( { theMap: window.theMap, container: svg_container } );
 
    var resizeSVGElement = function( arg_cityPolyline ){
         var xMultiplier = ( this.presentMaxX - this.presentMinX ) / this.resizedMapWidth,
@@ -99,16 +100,16 @@
     // TODO: This is a hack job.
     function cityCoordinatesInit(){
         window.theMap.addEventListener('load', function(){
-            if( this.theMap.sliderPosition <= 160 ){ 
-                this.cities_svg.style.opacity = '0';
-                this.cities_svg.style.zIndex = '-1000'; 
-                return; 
+            if( this.theMap.sliderPosition <= 160 ){
+                this.citiesGroup.style.display = 'none'; 
+            } else {
+                resizeSvgCities();
+                this.citiesGroup.style.display = ''; 
             }
-            resizeSvgCities();
             this.cities_svg.style.zIndex = '';
-            this.cities_svg.style.opacity = '';
-        }.bind( { cities_svg: window.$('cities_svg'), theMap: window.theMap, resizeSvgCities: resizeSvgCities} ) );
-        window.$('cities_svg').addEventListener( window.theMap.mousewheelevt, function(){
+            this.cities_svg.style.opacity = '1';
+        }.bind( { cities_svg: svg_container, theMap: window.theMap, resizeSvgCities: resizeSvgCities, citiesGroup: citiesGroup } ) );
+        svg_container.addEventListener( window.theMap.mousewheelevt, function(){
             this.style.opacity = '0';
             this.style.zIndex = '-1000';
         });
@@ -117,7 +118,7 @@
     }
 
     var private_addPolyLinesToSvgElement = function(){
-        var parent = window.$( 'cities_svg' ),
+        var parent = citiesGroup,
             polyLine = undefined,
             citiesArray = Object.keys( private_cityPolylines ),
             pointsObj = private_cityPolylines,
@@ -129,9 +130,16 @@
             polyline.setAttribute( 'points', pointsObj[citiesArray[i]] );
             polyline.setAttribute( 'onmouseover', "this.style.fillOpacity='0.4';" );
             polyline.setAttribute( 'onmouseout', "this.style.fillOpacity='';" );
-            polyline.addEventListener('click', function(){ 
-                this.boxZoom( this.upperCaseName );
-            }.bind( { boxZoom: boxZoom_city, upperCaseName: citiesArray[i] }) );
+            polyline.addEventListener('click', function(){
+                if( this.that.clickAble ){
+                    this.boxZoom( this.upperCaseName );
+                }
+                this.that.clickAble = true;
+            }.bind( { boxZoom: boxZoom_city, upperCaseName: citiesArray[i], that: polyline }) );
+            polyline.addEventListener( 'mousedown', svgCitiesMouseDown );
+            polyline.theMap = window.$('theMap_primary');
+            polyline.theMapContainer = window.$( 'theMap_container' );
+            polyline.citiesGroup = citiesGroup;
             polyline.setAttribute( 'class', 'svg_cities' );
             polyline.setAttribute( 'Data', citiesArray[i] );
             parent.appendChild( polyline );
@@ -142,14 +150,14 @@
 
     var svgCitiesSetOpacityToZero = function( e ){
         this.cities_svg.style.opacity = '0';
-    }.bind( { cities_svg: window.$( 'cities_svg' ) } );
+    }.bind( { cities_svg: svg_container } );
 
-    var svgCitiesMouseDown = function ( e ){
-            var obj = { theMap: this.theMap, theMapContainer: this.theMapContainer, cities_svg: this.cities_svg };
+    var svgCitiesMouseDown = function ( e ){//TODO: Should this be an eventListener on each city instead?
+            var obj = { that: this, theMap: this.theMap, theMapContainer: this.theMapContainer, citiesGroup: this.citiesGroup };
             var citiesMouseMove = function ( e ){
                         if ( e.clientY - this.theMap.pan.oldMouseY < 5 && e.clientX - this.theMap.pan.oldMouseX < 5 ){ return; }
-                        this.cities_svg.style.opacity = '0';
-                        this.cities_svg.style.zIndex = '-1000';
+                        this.that.clickAble = false;
+                        //this.citiesGroup.style.zIndex = '-1000';
                         this.theMapContainer.removeEventListener('mousemove', citiesMouseMove );
                         this.theMapContainer.removeEventListener('mouseup', citiesMouseUp );
                     }.bind( obj );
@@ -159,7 +167,7 @@
                 }.bind( obj );
             this.theMapContainer.addEventListener('mousemove', citiesMouseMove );
             this.theMapContainer.addEventListener('mouseup', citiesMouseUp );
-        }.bind( { theMap: window.$('theMap_primary'), theMapContainer: window.$( 'theMap_container' ), cities_svg: window.$( 'cities_svg' ) } );
+        }
 
     var private_cityPolylines = {
         SNOHOMISH: '1325468.31128569,350601.1668392833 1326487.37378569,350601.1668392833 1327030.87378569,350306.77100595 1327846.12378569,349831.20850595 1327778.18628569,349514.1668392833 1327166.74878569,349514.1668392833 1327121.4571190232,348902.7293392833 1327370.56128569,348857.4376726167 1327325.2696190232,347974.2501726167 1327529.0821190232,347974.2501726167 1327506.43628569,347611.9168392833 1328978.4154523567,347566.6251726167 1329001.06128569,345664.3751726167 1328185.81128569,345664.3751726167 1328321.68628569,345347.33350595 1329703.0821190232,345347.33350595 1329680.43628569,347453.39600595 1329567.2071190232,348087.4793392833 1329974.8321190232,348087.4793392833 1329974.8321190232,348178.0626726167 1330178.6446190232,348178.0626726167 1330178.6446190232,347906.3126726167 1330790.0821190232,347272.2293392833 1330812.7279523567,346230.52100595 1331129.7696190232,346230.52100595 1331129.7696190232,344894.4168392833 1332941.43628569,344871.77100595 1332964.0821190232,346185.2293392833 1334322.8321190232,346230.52100595 1334277.5404523567,344849.1251726167 1335613.6446190232,344826.4793392833 1335523.06128569,344079.1668392833 1335704.2279523567,342946.8751726167 1335523.06128569,342629.83350595 1334979.56128569,341927.8126726167 1334979.56128569,341452.2501726167 1335183.37378569,341316.3751726167 1335455.12378569,340501.1251726167 1335387.18628569,340002.9168392833 1334956.9154523567,339300.89600595 1334503.99878569,338893.27100595 1334594.5821190232,338485.64600595 1334028.43628569,337579.8126726167 1333801.9779523567,337194.83350595 1333779.3321190232,336696.6251726167 1333847.2696190232,336289.0001726167 1333892.56128569,335994.6043392833 1333847.2696190232,335564.33350595 1334096.37378569,335315.2293392833 1334322.8321190232,335020.83350595 1334322.8321190232,334749.08350595 1334073.7279523567,334567.9168392833 1334164.31128569,334250.8751726167 1334119.0196190232,332960.0626726167 1332443.2279523567,332982.70850595 1331877.0821190232,333888.5418392833 1331650.62378569,334024.4168392833 1331310.93628569,334499.9793392833 1331061.8321190232,334726.4376726167 1330608.9154523567,334884.95850595 1330065.4154523567,334884.95850595 1328797.24878569,335315.2293392833 1327438.49878569,335473.7501726167 1326306.2071190232,335519.0418392833 1325898.5821190232,335700.20850595 1325558.8946190232,336039.89600595 1325241.8529523567,336289.0001726167 1324970.1029523567,337013.6668392833 1326736.4779523567,336991.02100595 1327053.5196190232,337308.0626726167 1326849.7071190232,337511.8751726167 1326962.93628569,338055.3751726167 1326894.99878569,338259.1876726167 1326759.12378569,338463.0001726167 1326713.8321190232,338780.0418392833 1326487.37378569,338621.52100595 1326283.56128569,339097.08350595 1326260.9154523567,339685.8751726167 1326011.81128569,339708.52100595 1326011.81128569,340184.08350595 1326623.24878569,340184.08350595 1326623.24878569,340319.95850595 1328004.6446190232,340252.02100595 1328049.93628569,340954.0418392833 1328185.81128569,341474.89600595 1328434.9154523567,341882.52100595 1328955.7696190232,342244.8543392833 1326668.5404523567,342290.14600595 1326645.8946190232,343648.89600595 1326328.8529523567,343648.89600595 1326396.7904523567,346253.1668392833 1325762.7071190232,346253.1668392833 1325762.7071190232,346955.1876726167 1326351.49878569,346955.1876726167 1326374.1446190232,347702.5001726167 1325921.2279523567,348064.83350595 1326260.9154523567,348427.1668392833 1326125.0404523567,348653.6251726167 1326147.68628569,348902.7293392833 1326374.1446190232,348925.3751726167 1325785.3529523567,349853.8543392833 1325468.31128569,350601.1668392833',
@@ -222,7 +230,7 @@
         resizeSvgCities: resizeSvgCities,
         getClientXYfromSP: getClientXYfromSP,
         boxZoom_city: boxZoom_city,
-        svgCitiesMouseDown: svgCitiesMouseDown,
+        //svgCitiesMouseDown: svgCitiesMouseDown,
         svgCitiesSetOpacityToZero: svgCitiesSetOpacityToZero,
     };
 }()

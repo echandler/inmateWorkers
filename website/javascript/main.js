@@ -18,17 +18,7 @@ var main = function ( x ){
     theMap.style.width  = theMap.width  +'px';// TODO: What is theMap.width again??
     theMap.style.height = theMap.height +'px';
     theMap.calculateMarkerPosition = window.marker_module.calculateMarkerPosition;
-    theMap.zoomPower = {'0': 350,
-                        '20': 700,
-                        '40': 1400,
-                        '60': 2800,
-                        '80': 5600,
-                        '100': 11200,
-                        '120': 22400,
-                        '140': 44800,
-                        '160': 89600,
-                        '180': 179200,
-                        '200': 358400 };
+    theMap.zoomPower = {'0': 350, '20': 700, '40': 1400, '60': 2800, '80': 5600, '100': 11200, '120': 22400, '140': 44800, '160': 89600, '180': 179200, '200': 358400 };
     theMap.hiddenImage = $( 'theMap_secondary' );
     theMap.zoomStrartTimer = undefined;
     theMap.setTimeoutt = window.setTimeout.bind( window );
@@ -73,14 +63,12 @@ var main = function ( x ){
     theMap.style[theMap.cssTransform] = 'translate3d(0px,0px,0px)';
     // Calculate the initial max width and height, set the container size
     // and set _width and _height to the container size.
-    console.log( theMap.cssTransform );
     if ( theMap.panningAnimationTrueFalse ){
         theMap.pan.mouseMoveFunction = window.mapControl_module.mapDragAndAnimation;
     } else {
         theMap.pan.mouseMoveFunction = window.mapContainer_module.mapDragOnly;
     }
     window.utilities_module.calculateMaxWidthHeight();
-    console.log( theMap.oldMouseY);
     theMap.mapContainer.style.width = theMap.resizedMapWidth +'px';
     theMap.mapContainer.style.height = theMap.resizedMapHeight +'px';
     theMap._width  = theMap.resizedMapWidth;
@@ -117,6 +105,7 @@ var main = function ( x ){
     theMap.addEventListener( 'error', mapControl_module.mapLoadError );
     window.cityCoordinates_module.cityCoordinatesInit();
     window.smallCountySvg_module.smallCountySvgInit();
+    window.drawSvgLine_module.drawLineInit()
     window.onpopstate = window.utilities_module.popStateHandler;
 }
 

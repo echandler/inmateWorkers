@@ -26,6 +26,7 @@ window.options_module = function(){
             i = undefined;
 
         for( i = 0; i < checkMarks.length; i++ ){
+            if( /dontChangeState/.test( checkMarks[i].className) ){ continue; }
             if ( optionsObject[checkMarks[i].id] ){
                 checkMarks[i].animatedCheck();
             } else {
@@ -60,9 +61,11 @@ window.options_module = function(){
 
     //TODO: make a private_makeSmallerUrl that knocks the decimal places off the coordinates.
     var private_makeUrl = function (){
-        var json = { mr: [] ,x: 0 ,mx: 0 ,my: 0 ,z: 0 },
+        var json = { mr: [], l: [], x: 0 ,mx: 0 ,my: 0 ,z: 0 },
             url = undefined,
-            markersArray = document.querySelectorAll('div.markerParent');
+            markersArray = document.querySelectorAll('div.markerParent'),
+            lines = document.querySelectorAll('.drawSvgLine'),
+            lineCoords = [];
             
         for( var m = 0; m < markersArray.length; ++m ){
            json.mr.push({   a: markersArray[m].apn || '',
@@ -71,6 +74,13 @@ window.options_module = function(){
                             m: markersArray[m].message,
                             i: markersArray[m].imgUrl
                         });
+        }
+        for( var l = 0; l < lines.length; ++l ){
+            lineCoords = [];
+            for( var s = 0; s < lines[l].statePlaneCoords.length; ++s ){
+                lineCoords.push( lines[l].statePlaneCoords[s].x.toFixed(0) +','+ lines[l].statePlaneCoords[s].y.toFixed(0) );
+            }
+            json.l.push( lineCoords );
         }
         json.x  = this.presentMinX;
         json.mx = this.presentMaxX;
@@ -267,7 +277,10 @@ window.options_module = function(){
                 }
             } else { // The elm has the className of .checkBox or labelTd, it's not a checkMark.
                 elm.addEventListener( 'click', private_checkMarkHandler );
-            }   
+            }
+            if( /dontChangeState/.test( elm.className ) ){
+                elm.style.color = 'grey';
+            }
         });
         private_setHomesSoldYears();
         private_updateOptions();

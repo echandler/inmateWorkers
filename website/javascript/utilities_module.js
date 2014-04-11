@@ -15,7 +15,6 @@ window.utilities_module = function(){
         window.$( 'zoom_control' ).style.visibility = 'visible';
         this.removeEventListener( 'load', firstMapLoad );
         
-        
         // This primes the first history position so that there will be a "state" if the person
         // uses the back button, then sets the onPopState variable to true so that an identical 
         // "state" won't be pushed onto the history stack.
@@ -86,6 +85,9 @@ window.utilities_module = function(){
                 this.presentMinY = this.infoFromUrl.y;
                 this.presentMaxY = this.infoFromUrl.my;
                 this.sliderPosition = this.infoFromUrl.z;
+                if( this.infoFromUrl.l && this.infoFromUrl.l.length !== 0 ){
+                    window.drawSvgLine_module.createPolyLinesFromUrl( this.infoFromUrl.l );
+                }
             } else if ( checkUrlForApn().doesExist ){
                 this.infoFromUrl = checkUrlForApn().contents;
             }
@@ -100,7 +102,7 @@ window.utilities_module = function(){
     }.bind( window.theMap );
 
     // TODO: Can popState be re-factored in a smarter way?
-    function popStateHandler(){
+    function popStateHandler( event ){
         var theMap = window.$('theMap_primary');   
         
         if( !event.state ){ return false; }
@@ -305,11 +307,24 @@ window.utilities_module = function(){
         }
     }.bind( window.theMap );
 
+    function handleAjaxError( arg_responseText, arg_Error ){
+        var error = undefined;
+        
+        if( /error/i.test( window. mainAjaxHTTPRequest.responseText ) ){
+            error = window. mainAjaxHTTPRequest.responseText.match(/<error.*?>(.*?)<\/error>/i)[1];
+            error = error.replace( /\\/g , '' );
+            console.error('There was an ajax error from onload: ', arg_Error );
+            alert( 'There was an error: \n\n' + error );
+        } else if ( arg_Error.type === 'error' ){
+            console.error('There was an ajax error from onerror: ', arg_Error );
+            alert( 'There was an error.' );
+        }
+    }
+    
     function mainAjax( xmlRequest ){// TODO: this should be named better?
 
-        //Remember xmlhttp is a global for testing.
-        window.xmlhttp.abort();
-        //window.xmlhttp = new XMLHttpRequest();
+        //Remember  mainAjaxHTTPRequest is a global for testing.
+        window.mainAjaxHTTPRequest.abort();
         var encodedResponse = undefined,
             url = window.parameters.urlPrefix + window.parameters.mapUrl;
 
@@ -317,17 +332,24 @@ window.utilities_module = function(){
         window.cityCoordinates_module.svgCitiesSetOpacityToZero();
         document.body.className = 'waiting';
         window.theMap.className = '';
-        xmlhttp.onreadystatechange = function(){
-            if ( xmlhttp.readyState == 4 && xmlhttp.status == 200 ){
-                if( /error/.test( xmlhttp.responseText ) ){ console.error("There was an error in utilities_module.ajax():\n\n" + xmlhttp.responseText )}
-                window.xml = ( new DOMParser() ).parseFromString( /<\?xml.*>/g.exec( xmlhttp.responseText )[0], "application/xml" );
-                window.mapControl_module.setImg();
-            }
+         mainAjaxHTTPRequest.onload = function(){
+            try{
+                window.xml = ( new DOMParser() ).parseFromString( /<\?xml.*>/g.exec(  mainAjaxHTTPRequest.responseText )[0], "application/xml" );
+            } catch ( tryCatchError ){
+               handleAjaxError(  mainAjaxHTTPRequest.responseText, tryCatchError );
+               window.mapControl_module.resetMapOnError();
+               return;
+            } 
+            window.mapControl_module.setImg();
+        }
+         mainAjaxHTTPRequest.onerror = function( e ){
+            handleAjaxError( '', e );
+            window.mapControl_module.resetMapOnError();
         }
         encodedResponse = window.encodeURIComponent( 'ArcXMLRequest' ) +'='+ window.encodeURIComponent( xmlRequest );
-        xmlhttp.open( 'POST', url, true );
-        xmlhttp.setRequestHeader( 'Content-type', 'application/x-www-form-urlencoded' );
-        xmlhttp.send( encodedResponse );
+         mainAjaxHTTPRequest.open( 'POST', url, true );
+         mainAjaxHTTPRequest.setRequestHeader( 'Content-type', 'application/x-www-form-urlencoded' );
+         mainAjaxHTTPRequest.send( encodedResponse );
     }
 
     // function smoothTransition( milliseconds ){
@@ -570,6 +592,7 @@ window.utilities_module = function(){
         addPageHasFocusClickHandling: addPageHasFocusClickHandling,
         checkUrlForApn: checkUrlForApn,
         addListeners: addListeners,
+        handleAjaxError: handleAjaxError, 
         removeListeners: removeListeners,
         getBase64Image: getBase64Image,
         handleResize: handleResize,

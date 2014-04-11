@@ -218,6 +218,10 @@ a {
 .n {
     width:10em;
     overflow: auto;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
 }
 
 .n a {
@@ -653,7 +657,7 @@ a {
     font-size : 25px;
     width: 100%;
     padding: 5px;
-    margin: 4px 0px -2px 0px;
+    margin: 4px 0px 0px 0px;
     /*background-color: rgba(17, 85, 204, 0.7);*/
     border-radius: 2px;
     background: -webkit-linear-gradient( top, rgba( 17, 85, 204, 0.45 ), rgba( 17, 85, 204, 0.5 ) );

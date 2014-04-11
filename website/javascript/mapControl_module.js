@@ -16,7 +16,8 @@ window.mapControl_module = function(){
             this.hiddenImage.style.cssText += 'visibility: visible;';
             this.hiddenImage.style[this.cssTransform] = this.style[this.cssTransform];
         } catch( e ){ console.dir( e );
-            utilities_module.addListeners();
+            window.utilities_module.handleAjaxError( xmlhttp.responseText, e );
+            resetMapOnError();
             return;
         }
         this.left = 0 - this.dragDiv.left;
@@ -27,7 +28,8 @@ window.mapControl_module = function(){
         this.tempTransformText = 'translate3d('+ this.left +'px,'+ this.topp +'px, 0px)';
         this.style[this.cssTransform] = this.tempTransformText;
         this.tempTransformString = '';
-        
+        window.$('svg_container').style.top = this.topp +'px';
+        window.$('svg_container').style.left = this.left +'px';
         // TODO: make an on error function.
         // this.onerror = function( e ){}
         this.presentMinX = +xmlEnvelope.getAttribute( 'minx' );
@@ -103,8 +105,24 @@ window.mapControl_module = function(){
         document.body.className = '';
         console.dir( e );
         window.alert(' There was a problem, the map image didn\'t load properly.\n\n Please try again.\n\n');
+        this.calculateMarkerPosition();
+        resetMapOnError();
     }
-
+    
+    var resetMapOnError = function(){
+        window.utilities_module.addListeners();
+        this.left = 0 - this.dragDiv.left;
+        this.topp = 0 - this.dragDiv.topp;
+        this._height = this.resizedMapHeight;
+        this._width  = this.resizedMapWidth;
+        this.setAttribute( 'style', 'opacity: 0; height:'+ this._height +'px; width:'+ this._width +'px;' );
+        this.tempTransformText = 'translate3d('+ this.left +'px,'+ this.topp +'px, 0px)';
+        this.style[this.cssTransform] = this.tempTransformText;
+        this.tempTransformString = '';
+        this.style.opacity = '1';
+        document.body.className = '';
+        this.calculateMarkerPosition();
+    }.bind( window.theMap );
 // TODO: Re-factor these 'box' functions.
     function private_boxZoom_mouseDown(e){
         var zoomBox = document.createElement('div');
@@ -213,7 +231,7 @@ window.mapControl_module = function(){
         this.pan.panningXYOld = undefined;
         this.pan.panningXYNew = undefined;
         window.utilities_module.removeTransitionFromMarkers();
-        window.cityCoordinates_module.svgCitiesMouseDown();
+        // /window.cityCoordinates_module.svgCitiesMouseDown();
         document.addEventListener( 'mouseout', private_mapMouseUp );
         document.addEventListener( 'mouseup', private_mapMouseUp );
         document.addEventListener( 'mousemove', this.pan.mouseMoveFunction );
@@ -280,7 +298,7 @@ window.mapControl_module = function(){
             x =  e.clientX - this.theMap.pan.oldMouseXpan,
             markers = this.theMap.markersArray,
             len = markers.length;
-
+ 
         this.theMap.pan.panningXYOld = this.theMap.pan.panningXYNew || [x, y];
         this.theMap.pan.panningXYNew = [x, y, this.date.now()];
         this.theMap.dragDiv.style.top = this.theMap.dragDiv.topp + (e.clientY - this.theMap.pan.oldMouseY) +'px';
@@ -292,6 +310,7 @@ window.mapControl_module = function(){
         setImg: setImg,
         mapLoad: mapLoad,
         mapLoadError: mapLoadError,
+        resetMapOnError:  resetMapOnError,
         boxZoom_doTheZoom: boxZoom_doTheZoom,
         theMap_mouseDown: theMap_mouseDown,
         mapDragOnly: mapDragOnly,

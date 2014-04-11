@@ -144,7 +144,7 @@ var mouseUp = function(e){
       this.box.parentNode.querySelector('g').style.fill = '';
       this.box.parentNode.querySelector('g').style.fillOpacity = '';
     }
-    arrayOfSmallCountyMarkers = this.box.parentNode.querySelectorAll('.smallCountyMarker');
+    arrayOfSmallCountyMarkers = this.box.parentNode.querySelectorAll('path.smallCountyMarker');
     for( var m = 0; m < arrayOfSmallCountyMarkers.length; ++m ){
       arrayOfSmallCountyMarkers[m].style.fill = this.box.style.fill;
     }
