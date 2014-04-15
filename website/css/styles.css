@@ -106,7 +106,7 @@ a {
 	position : absolute;
     top:0px;
     left:0px;
-	padding : 10px 25px 10px 10px;
+	padding : 15px 35px 15px 15px;
 	border-radius : 2px;
     box-shadow: 0px 0px 0px 1px lightgrey;
     white-space: nowrap;      /* CSS3 */   
@@ -140,8 +140,9 @@ a {
 .markerDeleteButton {
 	/*float : right;*/
     position : absolute;
-    right : 5px;
-    padding-top : 5px;
+    top: 15px;
+    right : 10px;
+    /*padding-top : 5px;*/
     padding-left : 5px;
     color : gray;
     cursor : pointer;
@@ -161,7 +162,7 @@ a {
     border-top : 30px solid rgb( 130, 130, 130);
     border-bottom-color: rgba( 0, 0, 0, 0.2);
     position : relative;
-    top : 40px;
+    top : 45px;
     left : 50%;
     margin-top: -40px;
     /*margin-left : -17.5px;*/
@@ -297,7 +298,7 @@ a {
     left: 5%;
     z-index: 900000000000000000000;
     width: 16px;
-    height: 262px;
+    height: auto;
     visibility: hidden;
     /*border: 1px solid  rgba( 17, 85, 204, 1);   */
     /*border-radius: 3px;*/
@@ -346,6 +347,17 @@ a {
     width: 6px;
 }
 
+#full_zoom_out_button{
+    background: url('images/sprites.png') left top;
+    display: block;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+#full_zoom_out_button:hover { 
+    background-position: left -17px top 0px;
+}
 #container {
     height: 20px;
     width: 100px;
@@ -358,7 +370,8 @@ a {
 }
 
 #zoom_in_button{
-    background-image: url('images/uparrow.png');
+    background: url('images/sprites.png') top left;
+    background-position: 0px -42px;
     display: block;
     cursor: pointer;
     height: 24px;
@@ -367,11 +380,12 @@ a {
 }  
 
 #zoom_in_button:hover {
- background-image: url('images/uparrowhover.png');
+ background-position: -17px -42px;
 }
 
 #zoom_out_button{
-    background-image: url('images/dwnarrow.png');
+    background: url('images/sprites.png') top left;
+    background-position: 0px -17px;
     display: block;
     cursor: pointer;
     height: 24px;
@@ -380,7 +394,7 @@ a {
 }
 
 #zoom_out_button:hover {
-    background-image: url('images/dwnarrowhover.png');
+    background-position: -17px -17px;
 }
 
 #messageContainer{
@@ -517,7 +531,8 @@ a {
     stroke: black !important;
 }
 .snocoTreesOptionsOpen {
-    right: 4px !important;
+    right: 7px !important;
+    top: 19px !important;
     height: 10px !important;
 }
 /*#options_svg_gear:hover {
@@ -551,12 +566,12 @@ a {
     width: 31px !important;
     height: 30px !important;
     opacity: 1 !important;
-    right: 6px !important;
-    top: 6px !important;
+    right: 9px !important;
+    top: 9px !important;
 }
 
 .gearAnimationOpen {
-    -webkit-transform: rotate( -45deg) !important;
+    -webkit-transform: rotate( 0deg) !important; /* It rotates fine in chrome but when it stops its off by a few pixels which is very annoying */
     -moz-transform: rotate( -45deg) !important;
     -o-transform: rotate( -45deg) !important;
     transform: rotate( -45deg) !important;
@@ -841,6 +856,49 @@ a {
 #scale_pivot_handle{
     cursor: pointer;
 }
+
+.simpleMessageBox {
+    padding: 20px;
+    position: absolute;
+    top: 20px;
+    cursor: pointer;
+    font-size: 15px;
+    color: rgb(60, 60, 43);
+    background-color: white;
+    border: 1px solid rgba(120, 120, 120, 0.5);
+    border-radius: 2px;
+}
+
+.floatingMarkerRight:before, .floatingMarkerRight:after, .floatingMarkerLeft:before, .floatingMarkerLeft:after{
+    content: '';
+    border: 1px solid rgba(0, 0, 0, 0);
+    width: 0px;
+    height: 0px;
+    border-width: 10px;
+    position: absolute;
+    top: 20px;
+}
+
+.floatingMarkerRight:before {
+    border-right-color: rgba(120, 120, 120, 0.5);
+    left: -20px;
+}
+
+.floatingMarkerRight:after {
+    border-right-color: rgb(255, 255, 255);
+    left: -19px;
+}
+
+.floatingMarkerLeft:before {
+    border-left-color: rgba(120, 120, 120, 0.5);
+    right: -20px;
+}
+
+.floatingMarkerLeft:after {
+    border-left-color: rgb(255, 255, 255);
+    right: -19px;
+}
+
 /*TODO:*
     - change options top, left, width and what ever else from % to px.
     * adjust gear div position when options panel is open, maybe use a permanent position instead of a percent.

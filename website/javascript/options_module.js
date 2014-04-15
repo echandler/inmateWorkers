@@ -71,7 +71,7 @@ window.options_module = function(){
            json.mr.push({   a: markersArray[m].apn || '',
                             x: markersArray[m].statePlaneCoordX,
                             y: markersArray[m].statePlaneCoordY,
-                            m: markersArray[m].message,
+                            m: markersArray[m].message.replace(/#/g,''),
                             i: markersArray[m].imgUrl
                         });
         }
@@ -98,6 +98,7 @@ window.options_module = function(){
             case 'start options open':
                     if ( !/ ?spinGear/i.test( currentClasses ) ){
                         this.setAttribute( 'class', currentClasses +' gearOpen gearAnimationOpen' );
+                        //window.setTimeout( function(){ this.setAttribute( 'class', currentClasses +' gearOpen' ); }.bind( this ), 200);
                     } else {
                         this.setAttribute( 'class', currentClasses +' gearOpen' );
                     }

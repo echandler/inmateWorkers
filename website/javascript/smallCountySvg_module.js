@@ -44,7 +44,7 @@ var mouseMove = function( e ){
   var spotY = 927 * topRatio;
   this.box.data.x = spotX+this.box.data.offsetX;
   this.box.data.y = spotY+this.box.data.offsetY;
-  this.box.setAttribute('x', this.box.data.x -this.box.data.offsetX);
+  this.box.setAttribute('x', this.box.data.x -this.box.data.offsetX );
   this.box.setAttribute('y', this.box.data.y-this.box.data.offsetY );
 }.bind( smallCountySvgParent );
 
@@ -159,7 +159,7 @@ var mouseUp = function(e){
       var miniFooterTop = +window.$( 'mini_footer' ).getBoundingClientRect().height,
           width = this.theMap.resizedMapWidth * 0.10,
           height = width * 0.5517857142857143, // 927/1680 is the viewBox coordinates, also the resolution of the monitor I was working on.
-          bottom = (  miniFooterTop + this.theMap.containerStyleTop ) + 30,
+          bottom = (  miniFooterTop ) + 40,
           right = this.theMap.resizedMapWidth * 0.03;
 
       this.style.width = width +'px';
@@ -187,7 +187,6 @@ var mouseUp = function(e){
       this.smallCountySvg.offSetTop = undefined;
       this.smallCountySvg.mouseIsOver = false;
       this.smallCountySvg.theMap = window.theMap;
-      console.log('hi',this.smallCountySvg.theMap);
       this.smallCountySvg.g = this.smallCountySvg.querySelector('g');
       this.smallCountySvg.box = this.box;
       this.box.addEventListener('mousedown', mouseDown);
@@ -228,3 +227,5 @@ var mouseUp = function(e){
           smallCountySvgReCalc: smallCountySvgReCalc,
         };
 }()
+
+// TODO: normalize the "box" here and the DOM (ie it's id ect.);

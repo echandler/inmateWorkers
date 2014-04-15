@@ -203,7 +203,7 @@ window.zoom_module = function (){
         }
     }.bind( window.theMap );
 
-    var fullZoomOut = function (){
+    var fullZoomOut = function (){// TODO: is zoomALLTheWayOut() better??
             var fullZoomUrl = window.fullZoomUrl,
                 xml = window.xml;
 
@@ -238,9 +238,18 @@ window.zoom_module = function (){
         }
     }.bind( window.theMap );
 
+    var zoomAllTheWayOut = function( arg_firstLoad ){
+        if ( this.sliderPosition !== 200 || arg_firstLoad ){
+            this.sliderPosition = 200;
+            this.zoomSliderStyle.top = this.sliderPosition +'px';
+            window.utilities_module.makeArcXMLRequest( window.parameters.fullZoomMinX, window.parameters.fullZoomMaxX, window.parameters.fullZoomMinY, window.parameters.fullZoomMaxY );
+        }
+    }.bind( theMap );
+
     return {
         zoomStart: zoomStart,
         fullZoomOut: fullZoomOut,
+        zoomAllTheWayOut: zoomAllTheWayOut,
         plus: plus,
         minus: minus,
         sliderMove: sliderMove,

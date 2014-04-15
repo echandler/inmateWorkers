@@ -52,13 +52,7 @@ var main = function ( x ){
     theMap.onPopState = undefined;
     theMap.infoFromUrl = false;
     theMap.boxZoom = undefined; // TODO: This is for the box zoom test. Which works well by the way. Congrats.
-    theMap.zoomAllTheWayOut = function( arg_firstLoad ){ 
-        if ( this.sliderPosition !== 200 || arg_firstLoad ){
-            this.sliderPosition = 200;
-            this.zoomSliderStyle.top = this.sliderPosition +'px';
-            window.utilities_module.makeArcXMLRequest( window.parameters.fullZoomMinX, window.parameters.fullZoomMaxX, window.parameters.fullZoomMinY, window.parameters.fullZoomMaxY );
-        }
-    };
+    theMap.zoomAllTheWayOut = window.zoom_module.zoomAllTheWayOut;
 
     theMap.style[theMap.cssTransform] = 'translate3d(0px,0px,0px)';
     // Calculate the initial max width and height, set the container size
@@ -103,7 +97,7 @@ var main = function ( x ){
     // These load event listeners need to be below window.utilities_module.createMarkersFromInfoFromUrl listener.
     theMap.addEventListener( 'load', mapControl_module.mapLoad );
     theMap.addEventListener( 'error', mapControl_module.mapLoadError );
-    window.cityCoordinates_module.cityCoordinatesInit();
+    window.citiesTownsSvg_module.cityCoordinatesInit();
     window.smallCountySvg_module.smallCountySvgInit();
     window.drawSvgLine_module.drawLineInit()
     window.onpopstate = window.utilities_module.popStateHandler;

@@ -264,6 +264,7 @@ window.marker_module = function(){
         textDiv.innerHTML = text;
         textDiv.style.fontSize = '17px';
         textDiv.className = 'markerTextDiv';
+        textDiv.markerBody = this.markerBody;
 
         Array.prototype.forEach.call( textDiv.getElementsByTagName( 'img' ), function( img ){
             
@@ -366,7 +367,7 @@ window.marker_module = function(){
             len = markersArray.length;
 
         for( var i = 0; i < len; ++i ){
-            markersArray[i].styleLeft = ( ( markersArray[i].statePlaneCoordX - this.presentMinX ) / xMultiplier ) - markersArray[i].offsetwidth - 3 ;
+            markersArray[i].styleLeft = (( ( markersArray[i].statePlaneCoordX - this.presentMinX ) / xMultiplier ) - markersArray[i].offsetwidth) ;
             markersArray[i].styleTop  = ( ( this.presentMaxY - markersArray[i].statePlaneCoordY ) / yMultiplier ) - markersArray[i].offsetheight;
             markersArray[i].style[this.cssTransform] = 'translate3d('+ ~~( markersArray[i].styleLeft  + left - this.dragDiv.left ) +'px, '+ ~~( markersArray[i].styleTop + topp - this.dragDiv.topp ) +'px, 0px)';
         }
@@ -434,7 +435,7 @@ window.marker_module = function(){
             //url = "http://korz.tomodo.me/http://gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.0&Form=True&Encode=False&CustomService=Query",
             url = window.parameters.urlPrefix + window.parameters.searchByApnUrl,
             xml = undefined, parcel = undefined, lat = undefined, lng = undefined,
-            xmlhttp = new XMLHttpRequest(),
+            fromAPNtoSPAjax = new XMLHttpRequest(),
             runOnce = true,
             currentAPNs = {};
 
@@ -550,10 +551,12 @@ window.marker_module = function(){
             mrkTotal = /MKTTL="(.*?)"/g;
             while( ( parcelArray = parcelNumber.exec( arg_xml ) ) !== null ){
                 html += '<a target="_blank"'
-                     + 'title="     \n     '+ private_normalize( ownerName.exec( arg_xml )[1] ) +'     \n    '
-                     + ' '+ private_upperCase( addrLine1.exec( arg_xml )[1] ) +'     \n    '
-                     + ' '+ private_upperCase( addrCity.exec( arg_xml )[1] ) +', '+ addrZip.exec( arg_xml )[1].replace( /-.*/, '' ) +'     \n    '
-                     + ' $'+ ( +mrkTotal.exec( arg_xml )[1] ).toLocaleString('en') +'     \n    "'
+                     + 'data="'+ private_normalize( ownerName.exec( arg_xml )[1] ) +'<br>'
+                     + private_upperCase( addrLine1.exec( arg_xml )[1] ) +'<br>'
+                     + private_upperCase( addrCity.exec( arg_xml )[1] ) +', '+ addrZip.exec( arg_xml )[1].replace( /-.*/, '' ) +'<br>'
+                     + '$'+ ( +mrkTotal.exec( arg_xml )[1] ).toLocaleString('en') +'"'
+                     + 'onmouseover = "t.call(this)" '
+                     + 'onmouseout = "this.m.parentNode.removeChild(this.m)" '
                      + 'href="'+ window.parameters.apnUrl + parcelArray[1]+'">'+ parcelArray[1] +'</a>';
             }
             html += '</div>';
@@ -601,31 +604,38 @@ window.marker_module = function(){
     }
 
     function deleteAllMarkers(){
-        var markerArray = document.querySelectorAll('div.markerParent, path.smallCountyMarker'),
-            len = markerArray.length,
+        var markersArray = window.theMap.markersArray,
             i = 0;
 
-        for ( ; i < len; ++i ){
+        for ( ; i < markersArray.length; ++i ){
+
             // Used a setTimeout for visual effect only, nothing special.
-            window.setTimeout(function( m ){ m.parentNode.removeChild( m ) }, ( window.Math.random() * 500 ), markerArray[i] );
+            if ( markersArray[i] && /markerParent|smallCountyMarker/.test( markersArray[i].className ) ){
+                window.setTimeout(function( m ){ 
+                    window.$('smallCountyMarker'+ m.id ).parentNode.removeChild( window.$('smallCountyMarker'+ m.id ) );
+                    m.parentNode.removeChild( m ) }, ( window.Math.random() * 500 ), markersArray[i] );
+                markersArray.splice(i, 1);
+                i = 0;
+            }
         }
-        window.theMap.markersArray = [];
     }
 
-    function private_normalize( ownerName ){ // This is basically of a hack job.
+    function private_normalize( arg_ownerName ){ // This is basically of a hack job.
         var splitIt = '',
             words = '',
             temp = [],
-            hud = ownerName.match( /sec|hous|urb/ig ),
-            fannie = ownerName.match( /fed|nation|mor/ig ),
-            freddie = ownerName.match( /fed|home|loan/ig );
+            hud = /sec|hous|urb/ig.test( arg_ownerName ),
+            fannie = /fed|nation|mor/ig.test( arg_ownerName ),
+            freddie = /fed|home|loan/ig.test( arg_ownerName ),
+            USA = /u s a/i.test( arg_ownerName );
                                         
-        ownerName = ownerName.replace(/\\/,'');
-        if ( /LLC|l l c|realt|city of|indian land/i.test( ownerName ) ){ return private_upperCase( ownerName ); }
+        arg_ownerName = arg_ownerName.replace(/\\/,'');
+        if ( /LLC|l l c|realt|city of|indian land|trust|forest|state|univ/i.test( arg_ownerName ) ){ return private_upperCase( arg_ownerName.replace(/\\|\//,' & ') ); }
         if ( hud != null && hud.length >= 3 ) { return "HUD" }
         if ( fannie != null && fannie.length >= 3 ) { return 'Fannie Mae'; }
         if ( freddie != null && freddie.length >= 3 ) { return 'Freddie Mac'; }
-        words = ownerName.replace( /&amp;|\&|\+|\/| jr(?!\w)| sr(?!\w)|  /gi, function( match ){ return ( ( /jr|sr/gi ).test( match ) == true ) ? '' : ( ( /  /gi ).test( match ) ) ? ' ' : ' & '; } );
+        if ( USA ){ return '(USA) Federal Gov. Land'; }
+        words = arg_ownerName.replace( /&amp;|\&|\+|\/| jr(?!\w)| sr(?!\w)|  /gi, function( match ){ return ( ( /jr|sr/gi ).test( match ) == true ) ? '' : ( ( /  /gi ).test( match ) ) ? ' ' : ' & '; } );
         splitIt = ( ( words.split( ' ' ).length == 3 || words.split( ' ' ).length == 2 ) && ( /\&|bank|corp|llc|credit|union|RESIDENCE|Mortgage|apart|condo|inc.?\w{0}|ASSOC/gi ).test( words ) == false )
                             ? words.replace( /([a-z]*)\s?(\w*)\s?(\w*)/i, function( match,a,b,c,offset,string ){ return ( b.length > 1 ) ? [ b, a ].join( ' ' ) : [ c,a ].join( ' ' ); } ).split( ' ' ) 
                             : words.split( ' ' );
@@ -681,7 +691,41 @@ window.marker_module = function(){
             }
         }
     }.bind( window.theMap );
-    
+
+    function makeMultiFamilyHouseingMesssage(e){
+        var message = undefined,
+            messageWidth = undefined,            
+            markerBodyRect = this.parentNode.parentNode.markerBody.getBoundingClientRect(),
+            thisRect = this.getBoundingClientRect(),
+            data = this.getAttribute('data').split('<br>'),
+            html = undefined;
+           
+        html =  '<div class="m"><div>Owner:<br>'
+                + 'Address:<br>'
+                + ( ( !/unknown/i.test( data[1] ) && /unknown|\w|\d/gi.test( data[2] ))? '<br>':'' )
+                + 'Value:</div><div>'+ data[0] +'<br>'                   
+                + (( !/unknown/i.test( data[1] ) )? data[1] +'<br>': 'Unknown<br>')
+                + (( /unknown|\w|\d/gi.test( data[2] ) )? data[2] +'<br>': '')
+                + data[3] +'</div>';
+        message = window.utilities_module.simpleMessageBox( html,'hi'),
+        message.style.width = 'auto'; 
+        messageWidth = message.offsetWidth;
+        if( ( markerBodyRect.left - 5 - messageWidth ) < window.theMap.containerStyleLeft + 10){
+            message.style.left = markerBodyRect.right + 15 +'px';
+            message.className = message.className +' floatingMarkerRight';
+        } else{
+            message.style.left = ( markerBodyRect.left - 5 - messageWidth ) +'px';
+            message.className = message.className +' floatingMarkerLeft';
+        }
+        message.style.top = thisRect.top - 20 +'px';
+        message.style.padding = '15px';
+        message.style.zIndex = '999999999999';
+        message.style.color = 'black';
+        this.m = message;
+    }
+
+    window.t = makeMultiFamilyHouseingMesssage;
+
     return {
         fromAPNtoSP: fromAPNtoSP,
         makeInterStateShields: makeInterStateShields,
@@ -692,6 +736,7 @@ window.marker_module = function(){
         calculateMarkerPosition: calculateMarkerPosition,
         deleteAllMarkers: deleteAllMarkers,
         isSimpleMarkerOnImage: isSimpleMarkerOnImage,
+        makeMultiFamilyHouseingMesssage: makeMultiFamilyHouseingMesssage,
     }
 }();
 

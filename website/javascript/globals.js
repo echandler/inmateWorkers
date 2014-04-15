@@ -4,7 +4,7 @@ var // TODO: Only parameters or default values should go in parameters.
                     //http://korz.tomodo.me/ 
                     //http://192.168.56.1:1000?
         urlPrefix: 'http://forwarding-proxy.appspot.com/',
-        apnUrl: 'www.snoco.org/proptax/search.aspx?parcel_number=',
+        apnUrl: 'https://www.snoco.org/proptax/search.aspx?parcel_number=',
         searchByApnUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.1&Form=True&Encode=False&CustomService=Query",
         mapUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.4.1&Form=True&Encode=False?",    
         propertyInfoUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.0&Form=True&Encode=False&CustomService=Query",
@@ -50,6 +50,7 @@ var // TODO: Only parameters or default values should go in parameters.
     throttleResize = undefined,
     pageHasFocus = true, // TODO: this is a test.
     addRemoveEventListenersObj = undefined,
-    popStateCounter = 0;
+    popStateCounter = 0,
+    t = undefined;// This is used to make the multi family markers shorter, look in marker_module for assignment.
 
     var city = false; //TODO: this is a global for testing.

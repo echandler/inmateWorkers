@@ -123,6 +123,7 @@ window.mapControl_module = function(){
         document.body.className = '';
         this.calculateMarkerPosition();
     }.bind( window.theMap );
+    
 // TODO: Re-factor these 'box' functions.
     function private_boxZoom_mouseDown(e){
         var zoomBox = document.createElement('div');
@@ -231,7 +232,7 @@ window.mapControl_module = function(){
         this.pan.panningXYOld = undefined;
         this.pan.panningXYNew = undefined;
         window.utilities_module.removeTransitionFromMarkers();
-        // /window.cityCoordinates_module.svgCitiesMouseDown();
+        // /window.citiesTownsSvg_module.svgCitiesMouseDown();
         document.addEventListener( 'mouseout', private_mapMouseUp );
         document.addEventListener( 'mouseup', private_mapMouseUp );
         document.addEventListener( 'mousemove', this.pan.mouseMoveFunction );

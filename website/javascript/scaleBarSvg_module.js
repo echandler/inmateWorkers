@@ -37,22 +37,22 @@ var scaleBarSvg_module = function(){
 
       function handleMouseUp(e){
         $('feetDiv').parentNode.removeChild( $('feetDiv') );
-        if ( theScaleBarParent.data.orientation === 'vert' ){
-          document.removeEventListener('mousemove', verthandleMouseMove );
-        }else {
+        if ( theScaleBarParent.data.orientation === 'horiz' ){
           document.removeEventListener('mousemove', horizhandleMouseMove );
+        }else {
+          document.removeEventListener('mousemove', verthandleMouseMove );
         }
         document.removeEventListener('mouseup', handleMouseUp );
         theBar.style.cursor = '';
         document.body.style.cursor = '';
       }
-      if ( theScaleBarParent.data.orientation === 'vert' ){
-        document.addEventListener('mousemove', verthandleMouseMove );
+      if ( theScaleBarParent.data.orientation === 'horiz' ){
+        document.addEventListener('mousemove', horizhandleMouseMove );
         feetDiv.innerHTML = ~~(feetDiv.feetPerPixel * ((e.clientX) - (feetDiv.minX + 5) )) +' ft';
         feetDiv.style.left = ( ( e.clientX - feetDiv.minX ) / 2 ) + feetDiv.minX - (feetDiv.clientWidth / 2) + 'px';
         feetDiv.style.top = e.clientY + 20 +'px';
        }else {
-        document.addEventListener('mousemove', horizhandleMouseMove );
+        document.addEventListener('mousemove', verthandleMouseMove );
         feetDiv.style.left = e.clientX + 20 +'px'; 
         feetDiv.style.top = feetDiv.maxY - ( ( feetDiv.maxY - e.clientY) /2 ) -30 + 'px';
         feetDiv.innerHTML = ~~( feetDiv.feetPerPixel * ( ( feetDiv.maxY - 5 ) - ( e.clientY )) ) +' ft';
@@ -60,7 +60,7 @@ var scaleBarSvg_module = function(){
       document.addEventListener('mouseup', handleMouseUp);
     }
 
-    var verthandleMouseMove = function( e ){
+    var horizhandleMouseMove = function( e ){
       var x = e.clientX - +this.resizeHandle.parentNode.style.left.replace(/px/,'');
 
       if( x < 25 ){ return; }
@@ -74,8 +74,8 @@ var scaleBarSvg_module = function(){
              pivotHandle: pivotHandle,
              Bar: theBar }  );
 
-    var horizhandleMouseMove = function( e ){
-      var y = (window.theMap.resizedMapHeight - e.clientY ) - +this.pivotHandle.parentNode.style.bottom.replace(/px/,'');
+    var verthandleMouseMove = function( e ){
+      var y = (this.theMap.resizedMapHeight - e.clientY ) - +this.pivotHandle.parentNode.style.bottom.replace(/px/,'') + ( this.theMap.containerStyleTop*2);
       
       if( y < 25 ){ return; }
       this.resizeHandle.feetDiv.innerHTML = (~~(this.resizeHandle.feetDiv.feetPerPixel * ( ( this.resizeHandle.feetDiv.maxY - 5 ) - ( e.clientY )))).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") +' ft';
@@ -83,11 +83,12 @@ var scaleBarSvg_module = function(){
       this.pivotHandle.setAttribute( 'd', 'M10,'+ ( y + 4)+' l10,0 l0,-10 l-10,0 l-10,5 l10,5 z' );
       this.Bar.setAttribute( 'd', 'M13,5 l0,'+ ( y + 4)+ ' l5,0 l0,-'+ ( y + 4)+' z' );
       this.resizeHandle.parentNode.style.height = (y + 5 ) +'px';
-      this.resizeHandle.feetDiv.style.top = this.resizeHandle.feetDiv.maxY - (( this.resizeHandle.feetDiv.maxY - e.clientY) /2) -30 + 'px';
+      this.resizeHandle.feetDiv.style.top = this.resizeHandle.feetDiv.maxY - (( this.resizeHandle.feetDiv.maxY - e.clientY) /2) -30+ this.theMap.containerStyleTop  + 'px';
       //this.resizeHandle.feetDiv.style.left = e.clientX + 20 +'px';
     }.bind( { resizeHandle: resizeHandle,
              pivotHandle: pivotHandle,
-             Bar: theBar } );
+             Bar: theBar,
+             theMap: window.theMap } );
 
     function scaleBarMouseDown( e ){
       this.offSetX = e.clientX - +theScaleBarParent.style.left.replace( /px/, '' );
@@ -110,24 +111,24 @@ var scaleBarSvg_module = function(){
       document.addEventListener('mouseup', mouseUp);
     }
 
-    function changeScaleBarOrientation(){
+    function changeScaleBarOrientation( arg_orientation ){
         var width = theScaleBarParent.style.height.replace( /px/, '' ),
             height = theScaleBarParent.style.width.replace( /px/, '' );
 
         theScaleBarParent.style.width = width +'px';
         theScaleBarParent.style.height = height +'px';
-        if( theScaleBarParent.data.orientation === 'vert' ){
-          theScaleBarParent.data.orientation = 'horiz';
+        if( theScaleBarParent.data.orientation === 'horiz' ){
+          theScaleBarParent.data.orientation = 'vert';
           resizeHandle.setAttribute( 'd', 'M10,11 l10,0 l0,-10 l-10,0 l-10,5 l10,5 z' );
           theBar.setAttribute( 'd', 'M13,5 l0,'+ ( height )+' l5,0 l0,-'+ ( height )+' z' );
           pivotHandle.setAttribute( 'd', 'M10,'+ ( height - 1)+' l10,0 l0,-10 l-10,0 l-10,5 l10,5 z' );
         } else {
-          theScaleBarParent.data.orientation = 'vert';
+          theScaleBarParent.data.orientation = 'horiz';
           resizeHandle.setAttribute( 'd', 'M'+ (width-11)+',20 l10,0 l0,-10 l-5,-10 l-5,10 z' );
           theBar.setAttribute( 'd', 'M5,12  l'+ (width-5)+',0 l0,5 l-'+ (width-5)+',0 z' );
           pivotHandle.setAttribute( 'd', "M5,20 l10,0 l0,-10 l-5,-10 l-5,+10 z" );
         }
-        // vert
+        // horiz
         // left = M10,499 l10,0 l0,-10 l-10,0 l-10,5 l10,5 z;
         // right = M10,11 l10,0 l0,-10 l-10,0 l-10,5 l10,5 z;
         // bar = M13,5 l0,499 l5,0 l0,-499 z;
@@ -135,21 +136,26 @@ var scaleBarSvg_module = function(){
 
     var scaleBarResize = function(){
         var width =  window.theMap.resizedMapWidth * 0.2,
-            scaleBarXCoord = (( window.theMap.resizedMapWidth - width ) - 30),
-            scaleBarYCoord = window.$('mini_footer').clientHeight + 5;
+            scaleBarXCoord = (( window.innerWidth - width ) - 30),
+            scaleBarYCoord = window.$('mini_footer').clientHeight + 10;
+
+        if( theScaleBarParent.data.orientation === 'vert' ){
+          changeScaleBarOrientation();
+        }
         theScaleBarParent.style.bottom = scaleBarYCoord+'px';
         theScaleBarParent.style.left = scaleBarXCoord+'px';
         theScaleBarParent.style.width = width +'px';
         resizeHandle.setAttribute( 'd', 'M'+ (width-11)+',20 l10,0 l0,-10 l-5,-10 l-5,10 z' );
         theBar.setAttribute( 'd', 'M5,12  l'+ (width-5)+',0 l0,5 l-'+ (width-5)+',0 z' );
     }
+
     function scaleBarInit(){
       theBar.addEventListener('mousedown', scaleBarMouseDown );
       resizeHandle.addEventListener('mousedown', handleMouseDown );
       pivotHandle.addEventListener('click', changeScaleBarOrientation );
       theScaleBarParent.data = {  bottom: 400,
                                   left: (window.theMap.resizedMapWidth - (window.theMap.resizedMapWidth * 0.2)),
-                                  orientation: 'vert',
+                                  orientation: 'horiz',
                                   width: 500,
                                   height: 21,
                           };

@@ -245,8 +245,9 @@ var overlayMap_module = function(){
 
         function overLayMapImgFirstLoadAlertMessage(){
             window.setTimeout( function( ){ 
-                window.alert(   '  Use the the four tabs on the \n'+
-                                'sides to resize the overlay map.\n\n');
+                window.utilities_module.simpleMessageBox('<center style="border-bottom: 1px solid rgba(93, 141, 195, 0.5);">Overlay Map</center>'
+                                                        +'&nbsp;&nbsp;Use the the four tabs on the sides<br>'
+                                                        +'to resize the overlay map.<br>', 'overlayMessage2');
             }, 1100 );
             this.removeEventListener( 'load', overLayMapImgFirstLoadAlertMessage );
         }

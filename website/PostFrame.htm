@@ -15,6 +15,7 @@
          </div>
     </div>
     <div id='zoom_out_button'></div>
+    <div title='Zoom all the way out' id='full_zoom_out_button'></div>
 </div>
 <div id='loading_div'>
     <center style=''>
@@ -195,7 +196,13 @@
                         </div>
                     </div>
                 </td>
-                <td class='labelTd' id='drawLine_Label'>Draw A Line</td>
+                <td class='labelTd' id='drawLine_Label'>Draw a line
+                    <svg xmlns="http://www.w3.org/2000/svg" style="margin-left: 5px;display: inline;height: 18px;width: 70px;stroke-width: 2px;">
+                        <circle cx="5" cy="5" r="2" style="fill: rgb(93, 141, 195);"></circle>
+                        <polyline points="5,5 20,15 40,5 60,15 65,10" style="fill: transparent;stroke: rgb(93, 141, 195);"></polyline>
+                        <circle cx="65" cy="10" r="2" style="fill: rgb(93, 141, 195);"></circle>
+                    </svg>
+                </td>
             </tr>
             <tr>
                 <td colspan= '4' rowspan='1'>
@@ -279,7 +286,7 @@
     </div>
     <div id='msg'></div>
     
-    <script type="text/javascript" src='javascript/test.min.js' ></script>
+    <script type="text/javascript" src='gruntBuild/test.min.js' ></script>
     <!-- TODO: <iframe onload='iframeLoadHandler();' id='iframe' src='http://gis.snoco.org/maps/property/addmatch.htm' height='700' width='500'> -->
 </body>
 </html>

@@ -31,7 +31,7 @@ window.utilities_module = function(){
                 : window.location.search
         );
         this.onPopState = true;
-        window.cityCoordinates_module.resizeSvgCities();
+        window.citiesTownsSvg_module.resizeSvgCities();
         window.marker_module.makeInterStateShields();
         window.marker_module.isSimpleMarkerOnImage();
         window.scaleBarSvg_module.scaleBarInit();
@@ -86,7 +86,7 @@ window.utilities_module = function(){
                 this.presentMaxY = this.infoFromUrl.my;
                 this.sliderPosition = this.infoFromUrl.z;
                 if( this.infoFromUrl.l && this.infoFromUrl.l.length !== 0 ){
-                    window.drawSvgLine_module.createPolyLinesFromUrl( this.infoFromUrl.l );
+                    window.drawSvgLine_module.createPolylinesFromUrl( this.infoFromUrl.l );
                 }
             } else if ( checkUrlForApn().doesExist ){
                 this.infoFromUrl = checkUrlForApn().contents;
@@ -164,6 +164,7 @@ window.utilities_module = function(){
             [ window.$( 'zoom_slider' ), 'mousedown', window.zoom_module.sliderMouseDown ],
             [ window.$( 'zoom_in_button' ), 'click', window.zoom_module.plus ],
             [ window.$( 'zoom_out_button' ), 'click', window.zoom_module.minus],
+            [ window.$( 'full_zoom_out_button' ), 'click', window.zoom_module.zoomAllTheWayOut],
             [ window.$( 'update_button' ), 'click', window.options_module.updateButtonHandler],
             [ window.$( 'save_button' ), 'click', window.options_module.updateButtonHandler],
             [ window.$( 'find_parcel_number' ), 'click', window.marker_module.fromAPNtoSP],
@@ -183,7 +184,7 @@ window.utilities_module = function(){
         this.theMap.setTimeoutt( function(){ window.options_module.svgController( 'finish addListeners' ); }, 2000 );
         this.theMap.mapContainer.addEventListener( this.mousewheelevt, window.zoom_module.zoomInOut );
         for( i = 0; i < this.array.length; ++i ){
-            this.array[i][0].addEventListener( this.array[i][1], this.array[i][2], false);
+            this.array[i][0].addEventListener( this.array[i][1], this.array[i][2], false );
         }
         for( i = 0; i < this.theMap.markersArray.length; ++i ){
             this.theMap.markersArray[i].addEventListener( this.mousewheelevt, window.zoom_module.zoomInOut );
@@ -306,21 +307,19 @@ window.utilities_module = function(){
             markers[len].style.cssText = markers[len].style.cssText.replace( /(-webkit-|-moz-|-ms-)?transition.*?;/g, '' );
         }
     }.bind( window.theMap );
-
-    function handleAjaxError( arg_responseText, arg_Error ){
-        var error = undefined;
-        
-        if( /error/i.test( window. mainAjaxHTTPRequest.responseText ) ){
-            error = window. mainAjaxHTTPRequest.responseText.match(/<error.*?>(.*?)<\/error>/i)[1];
-            error = error.replace( /\\/g , '' );
-            console.error('There was an ajax error from onload: ', arg_Error );
-            alert( 'There was an error: \n\n' + error );
-        } else if ( arg_Error.type === 'error' ){
-            console.error('There was an ajax error from onerror: ', arg_Error );
-            alert( 'There was an error.' );
-        }
-    }
     
+    function simpleMessageBox( arg_innerHTML, arg_id, arg_width ){
+        var message = document.createElement( 'div' );
+        message.className = 'simpleMessageBox';
+        message.style.width = ( arg_width && ( arg_widht +'px' ) ) || '300px';
+        message.style.left = ( ( window.theMap.resizedMapWidth / 2 ) - ( ( arg_width && ( arg_width / 2 ) ) || 150 ) ) +'px';
+        message.id = arg_id || 'simple_message_box';
+        message.innerHTML = arg_innerHTML;
+        message.onclick = function( e ){ e.stopPropagation(); this.parentNode.removeChild(this)};
+        document.body.appendChild( message );
+        return message;
+    }
+
     function mainAjax( xmlRequest ){// TODO: this should be named better?
 
         //Remember  mainAjaxHTTPRequest is a global for testing.
@@ -329,7 +328,7 @@ window.utilities_module = function(){
             url = window.parameters.urlPrefix + window.parameters.mapUrl;
 
         // TODO: Should theMap = 'this'?
-        window.cityCoordinates_module.svgCitiesSetOpacityToZero();
+        window.citiesTownsSvg_module.svgCitiesSetOpacityToZero();
         document.body.className = 'waiting';
         window.theMap.className = '';
          mainAjaxHTTPRequest.onload = function(){
@@ -352,10 +351,25 @@ window.utilities_module = function(){
          mainAjaxHTTPRequest.send( encodedResponse );
     }
 
-    // function smoothTransition( milliseconds ){
-    //     this.className += " .transitionAll2sEaseOut";
-    //     setTimeout( function( el ){ el.className = el.className.replace( / test/, '' ); }, milliseconds, this );
-    // }
+    function handleAjaxError( arg_responseText, arg_Error ){
+        var error = undefined;
+        
+        if( /error/i.test( window. mainAjaxHTTPRequest.responseText ) ){
+            error = window. mainAjaxHTTPRequest.responseText.match(/<error.*?>(.*?)<\/error>/i);
+            if( error ){
+                error = error.replace( /\\/g , '' );
+                console.error('There was an ajax error from onload: ', arg_Error );
+                alert( 'There was an error: \n\n' + error );
+            } else{
+                console.error('There was an ajax error from onerror: ', arg_Error );
+                alert( 'There was an error.' );
+            }
+        } else if ( arg_Error.type === 'error' ){
+            console.error('There was an ajax error from onerror: ', arg_Error );
+            alert( 'There was an error.' );
+        }
+        window.mapControl_module.resetMapOnError();
+    }
 
     // TODO: Rename send() to something more descriptive like 'createXMLRequest' ?
     var makeArcXMLRequest = function ( minX, maxX, minY, maxY, arg_onPopState, arg_overLayMap ){
@@ -388,7 +402,7 @@ window.utilities_module = function(){
             cityNameOutlineColor = '255,255,255',
             cityBoundaryWidth = (( sliderPositionNumber > 5 )? '2': '3'),
             cityBoundaryDash = 'solid',
-            cityBoundaryColor = (( window.city )?'230,100,80': '208, 170, 128' ),
+            cityBoundaryColor = (( window.city )?'230,100,80': '178, 140, 98' ),
             cityFillTransparency = (( sliderPositionNumber > 6 )? '0.2': '0'),
             showCityBoundaries = (( sliderPositionNumber < 10 )? '9999999999999': '1'),
             cityRoadTransparency = 0.5,
@@ -475,7 +489,7 @@ window.utilities_module = function(){
 '</SIMPLERENDERER>\n': '' ),
 '<SCALEDEPENDENTRENDERER lower=\"1:1\" upper=\"1:2400\">\n',
 '<SIMPLELABELRENDERER field=\"'+ showParcelNumbers +'\">\n',
-'<TEXTSYMBOL antialiasing=\"true\" font=\"Calibri\" fontstyle=\"\" fontsize=\"14\" fontcolor=\"0, 0, 0\" outline=\"255,255,255\" />\n',
+'<TEXTSYMBOL antialiasing=\"true\" font=\"Calibri\" fontstyle=\"\" fontsize=\"14\" fontcolor = \"'+ cityFontColor +'\" outline=\"'+ cityNameOutlineColor +'\" />\n',
 '</SIMPLELABELRENDERER>\n',
 '</SCALEDEPENDENTRENDERER>\n',
 '</GROUPRENDERER>\n',
@@ -564,7 +578,7 @@ window.utilities_module = function(){
 //'<LAYERDEF id=\"2\" visible=\"'+ options.showSatelliteView_CheckMark +'\" />\n', //satellite view
 '<LAYERDEF id=\"0\" visible=\"'+ showTerrain +'\" />\n',
 '</LAYERLIST>\n',
-'<BACKGROUND color=\"245,240,230\"/>\n',
+'<BACKGROUND color=\"245,240,235\"/>\n',
 '</PROPERTIES>\n',
 // '<LAYER type=\"acetate\" name=\"theScaleBar\">\n',
 // '<OBJECT units=\"pixel\">\n',
@@ -599,6 +613,7 @@ window.utilities_module = function(){
         calculateMaxWidthHeight:calculateMaxWidthHeight,
         removeTransitionFromMarkers: removeTransitionFromMarkers,
         testProp: testProp,
+        simpleMessageBox: simpleMessageBox,
         mainAjax: mainAjax,
         makeArcXMLRequest: makeArcXMLRequest,
     }
