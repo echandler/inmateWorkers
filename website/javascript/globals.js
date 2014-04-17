@@ -23,9 +23,14 @@ var // TODO: Only parameters or default values should go in parameters.
         FULLZOOMMAXX: 1622342.497,
         FULLZOOMMINY: 284336.973,
         FULLZOOMMAXY: 477544.783,
-        panningAnimationMultiplier: 20,// If this default is changed from 20, window.panning_module.panningControlsliderMove needs to be changed also with 1 added to it.
+
+        // To set the panning sensitivity default:
+        // 1) Change panningAnimationMultiplier. (Default is 20)
+        // 2) optional: Change the sliders CSS right property. (Default 0% right)
+        // 3) Optional: Change window.panning_module.panningControlsliderMove, add panningAnimationMultiplier + 1 to the multiplier. (default is 21)
+        panningAnimationMultiplier: 10, // default is 20.
         panningAnimationTrueFalse: true, 
-        panningAnimationTime: 1000,
+        panningAnimationTime: 1000, // default is 1000.
         MAX_WIDTH: 1920, // default 1920.
         MAX_HEIGHT: 1080,// default 1080.
         MAX_IMG_PIXELS: 1920*1080, // default 1920*1080. It appears that this is the max amount of pixels for an image, anything larger generates a image too large error.

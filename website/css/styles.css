@@ -745,7 +745,7 @@ a {
 #panning_control_slider{
     position: absolute;
     top: -10px;
-    right: 0px;
+    right: 50%;
     border: 1px solid rgba(120, 120, 120, 0.498039);
     /*box-shadow: 0px 2px 2px -1px rgb(0, 0, 0);*/
     height: 18px;
@@ -899,8 +899,7 @@ a {
     right: -19px;
 }
 
-/*TODO:*
+/*TODO:
     - change options top, left, width and what ever else from % to px.
     * adjust gear div position when options panel is open, maybe use a permanent position instead of a percent.
-
-/
+*/
