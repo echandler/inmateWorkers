@@ -337,7 +337,7 @@ window.utilities_module = function(){
                 return;
             }
             try{
-                window.xml = ( new DOMParser() ).parseFromString( /<\?xml.*?'/.exec(  window.mainAjaxHTTPRequest.responseText )[0], "application/xml" );
+                window.xml = ( new DOMParser() ).parseFromString( /<\?xml.*>/.exec(  window.mainAjaxHTTPRequest.responseText )[0], "application/xml" );
             } catch ( tryCatchError ){
                handleAjaxError( tryCatchError );
                window.mapControl_module.resetMapOnError();

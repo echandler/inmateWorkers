@@ -9,7 +9,7 @@ var // TODO: Only parameters or default values should go in parameters.
         propertyImgUrl : "http://www.snoco.org/docs/sas/photos/",
         optionsCheckMarkDefaults: { 
             showCities_CheckMark        : true, 
-            showSatelliteView_CheckMark : false,
+            showSatelliteView_CheckMark : true,
             show2007YearMap_CheckMark   : false,
             show2012YearMap_CheckMark   : true,
             showPropertyImage_CheckMark : false, 
