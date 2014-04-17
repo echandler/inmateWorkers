@@ -51,10 +51,10 @@ window.marker_module = function(){
         // TODO: Are all these var's necessary?
         // Don't set a marker if the map is not zoomed in enough, default is 100;
         if ( (this.sliderPosition > 120 && !arg_infoObject) || ( e && e.target.nodeName === 'circle' ) ){ return; }
-        var infoObject = arg_infoObject || false; //{"a": "apn number goes here","x": lat,"y": lng,"m":"text message","i":"img url"}
-        var statePlaneCoordsXY = !infoObject && utilities_module.convertMouseCoordsToStatePlane( e );
-        var xMultiplier = ( this.presentMaxX - this.presentMinX ) / this.resizedMapWidth;
-        var yMultiplier = ( this.presentMaxY - this.presentMinY ) / this.resizedMapHeight;
+        var infoObject = arg_infoObject || false, //{"a": "apn number goes here","x": lat,"y": lng,"m":"text message","i":"img url"}
+            statePlaneCoordsXY = !infoObject && utilities_module.convertMouseCoordsToStatePlane( e ),
+            xMultiplier = ( this.presentMaxX - this.presentMinX ) / this.resizedMapWidth,
+            yMultiplier = ( this.presentMaxY - this.presentMinY ) / this.resizedMapHeight;
         
         var markerBody = document.createElement( 'div' );
             markerBody.className = 'markerParent';
@@ -76,6 +76,9 @@ window.marker_module = function(){
                 this.offsetwidth  = ( this.offsetWidth / 2 );
                 this.offsetheight =  this.offsetHeight + 30;
             }
+            markerBody.addEventListener( 'click', function(){
+                window.pageHasFocus = true;
+            });
             markerBody.apn = infoObject.a || undefined;
 
             // markerBody.message and markerBody.imgUrl are used by utilities_module.makeUrl();
@@ -98,8 +101,8 @@ window.marker_module = function(){
                         markerArray.splice( markerArrayLen, 1 );
                     } 
                 }
-                this.markerBody.parentElement.removeChild( this.markerBody );
-                window.$('smallCountyMarker'+ parentId).parentElement.removeChild( window.$('smallCountyMarker'+ parentId) );
+                this.markerBody.parentNode.removeChild( this.markerBody );
+                window.$('smallCountyMarker'+ parentId).parentNode.removeChild( window.$('smallCountyMarker'+ parentId) );
             });
         markerBody.appendChild( deleteButton );
 
@@ -139,8 +142,8 @@ window.marker_module = function(){
         arrow.appendChild( innerArrow );
 
         //document.body.insertBefore( markerBody, document.body.firstChild );
-        // this.parentElement should be '#theMap_container'.
-        this.parentElement.appendChild( markerBody );
+        // this.parentNode should be '#theMap_container'.
+        this.parentNode.appendChild( markerBody );
         markerBody.setOffSetWH();
         this.markersArray.push( markerBody );
         window.smallCountySvg_module.smallCountySvgMakerMaker({x: markerBody.statePlaneCoordX, y: markerBody.statePlaneCoordY, id: markerBody.id });
@@ -184,15 +187,15 @@ window.marker_module = function(){
         coordsDiv.setAttribute('data','');
         coordsDiv.markerBody = this.markerBody;
         coordsDiv.theMap = this.theMap;
-        coordsDiv.addEventListener( 'click', function(){ 
+        coordsDiv.addEventListener( 'click', function(){
 
             // TODO: Should minutes and seconds be an option also?
               if ( this.getAttribute('data') === '' ){ 
-                this.innerHTML = "x: "+ this.parentElement.parentElement.statePlaneCoordX.toFixed(7) +" y: " + this.parentElement.parentElement.statePlaneCoordY.toFixed(7);
+                this.innerHTML = "x: "+ this.parentNode.parentNode.statePlaneCoordX.toFixed(7) +" y: " + this.parentNode.parentNode.statePlaneCoordY.toFixed(7);
                 this.setAttribute('data','sp' ); 
                 this.title = 'State plane coordinates are approximate.'
               } else { 
-                this.innerHTML = "x: "+ this.parentElement.parentElement.wgs84XCoord +" y: " + this.parentElement.parentElement.wgs84YCoord; 
+                this.innerHTML = "x: "+ this.parentNode.parentNode.wgs84XCoord +" y: " + this.parentNode.parentNode.wgs84YCoord; 
                 this.setAttribute('data','' ); 
                 this.title = 'Coordinates are approximate.'
               }
@@ -221,7 +224,7 @@ window.marker_module = function(){
         messageContainer.appendChild( imgAnchor );
         this.markerBody.insertBefore( messageContainer, this );
         this.markerBody.setOffSetWH();
-        this.theMap.calculateMarkerPosition( this.markerBody );
+        calculateMarkerPosition( this.markerBody );
     }
 
     function markerAddImageAndText( e, info ){
@@ -304,7 +307,7 @@ window.marker_module = function(){
                 image.theMap = this.theMap;
                 image.markerBody = this.markerBody;
                 image.onload = function(){ 
-                        this.parentElement.style.display = '';
+                        this.parentNode.style.display = '';
                         this.style.height = 'auto';
                         this.markerBody.setOffSetWH();
                         this.theMap.calculateMarkerPosition( this.markerBody );
@@ -314,7 +317,7 @@ window.marker_module = function(){
             messageContainer.appendChild( imageAnchor );
         }
         this.markerBody.setOffSetWH();
-        this.theMap.calculateMarkerPosition( this.markerBody );
+        calculateMarkerPosition( this.markerBody );
     }
 
     function markerImgError( e ){
@@ -322,27 +325,27 @@ window.marker_module = function(){
         if ( /http:\/\/www.snoco.org\/docs\/sas\/photos/.test( this.src ) ){
             if ( /R01/.test( this.src ) ){
                 window.setTimeout( function(){ 
-                    this.parentElement.href = this.src.replace( /R01/, 'C01' );
+                    this.parentNode.href = this.src.replace( /R01/, 'C01' );
                     this.src = this.src.replace( /R01/, 'C01' );
                 }.bind( this ), 10 ); 
             } else if ( /C01/.test( this.src ) ){
                 window.setTimeout( function(){ 
-                    this.parentElement.href = this.src.replace( /C01/, 'R02' );
+                    this.parentNode.href = this.src.replace( /C01/, 'R02' );
                     this.src = this.src.replace( /C01/, 'R02' );
                 }.bind( this ), 10 );
             } else if ( /R02/.test( this.src ) ){
                 window.setTimeout( function(){ 
-                    this.parentElement.href = this.src.replace( /R02/, 'C02' );
+                    this.parentNode.href = this.src.replace( /R02/, 'C02' );
                     this.src = this.src.replace( /R02/, 'C02' );
                 }.bind( this ), 10 );
             } else if ( /C02/.test( this.src ) ){
                 window.setTimeout( function(){ 
-                    this.parentElement.href = this.src.replace( /C02/, 'R03' );
+                    this.parentNode.href = this.src.replace( /C02/, 'R03' );
                     this.src = this.src.replace( /C02/, 'R03' );
                 }.bind( this ), 10 ); 
             } else if ( /R03/.test( this.src ) ){
                 window.setTimeout( function(){ 
-                    this.parentElement.href = this.src.replace( /R03/, 'C03' );
+                    this.parentNode.href = this.src.replace( /R03/, 'C03' );
                     this.src = this.src.replace( /R03/, 'C03' );
                 }.bind( this ), 10 );
             }  else {
@@ -367,9 +370,9 @@ window.marker_module = function(){
             len = markersArray.length;
 
         for( var i = 0; i < len; ++i ){
-            markersArray[i].styleLeft = (( ( markersArray[i].statePlaneCoordX - this.presentMinX ) / xMultiplier ) - markersArray[i].offsetwidth) ;
+            markersArray[i].styleLeft = (( ( markersArray[i].statePlaneCoordX - this.presentMinX ) / xMultiplier ) - markersArray[i].offsetwidth) - 3;
             markersArray[i].styleTop  = ( ( this.presentMaxY - markersArray[i].statePlaneCoordY ) / yMultiplier ) - markersArray[i].offsetheight;
-            markersArray[i].style[this.cssTransform] = 'translate3d('+ ~~( markersArray[i].styleLeft  + left - this.dragDiv.left ) +'px, '+ ~~( markersArray[i].styleTop + topp - this.dragDiv.topp ) +'px, 0px)';
+            markersArray[i].style[this.cssTransform] = 'translate3d('+ ~~( markersArray[i].styleLeft  + left - this.dragDiv._left ) +'px, '+ ~~( markersArray[i].styleTop + topp - this.dragDiv._top ) +'px, 0px)';
         }
     }.bind( window.theMap );
 
@@ -379,12 +382,12 @@ window.marker_module = function(){
             maxX = x+5,
             minY = y,
             maxY = y+5,
-            propXML = '<?xml version="1.0" encoding="UTF-8" ?><ARCXML version="1.1">\r\n<REQUEST>\r\n'
-                      + '<GET_FEATURES outputmode="xml" envelope="false" geometry="false" featurelimit="10000">\r\n'
+            propXML = '<?xml version="1.0" encoding="UTF-8" ?><ARCXML version="1.1"><REQUEST>'
+                      + '<GET_FEATURES outputmode="xml" envelope="false" geometry="false" featurelimit="10000">'
                       + '<LAYER id="11" /><SPATIALQUERY subfields="'
                       + private_xmlQueryParams
                       + '"><SPATIALFILTER relation="area_intersection" >'
-                      + '<ENVELOPE maxy="' + maxY + '" maxx="' + maxX + '" miny="' + minY + '" minx="' + minX + '"\/> '
+                      + '<ENVELOPE maxy="' + maxY + '" maxx="' + maxX + '" miny="' + minY + '" minx="' + minX + '"/>'
                       + '</SPATIALFILTER></SPATIALQUERY></GET_FEATURES></REQUEST></ARCXML>',
             propXMLPostRequest = window.encodeURIComponent( "ArcXMLRequest" ) + "=" + encodeURIComponent( propXML ),
             propUrl = window.parameters.urlPrefix + window.parameters.propertyInfoUrl,
@@ -437,11 +440,8 @@ window.marker_module = function(){
             xml = undefined, parcel = undefined, lat = undefined, lng = undefined,
             fromAPNtoSPAjax = new XMLHttpRequest(),
             runOnce = true,
-            currentAPNs = {};
-
-            xmlRequest = 'ArcXMLRequest=' + encodeURIComponent( xml ),
-            
-            
+            currentAPNs = {},
+            xmlRequest = 'ArcXMLRequest=' + encodeURIComponent( xml );
         
         e && e.preventDefault;
         if ( apnArray[0] == '' ){ return; }
@@ -464,9 +464,9 @@ window.marker_module = function(){
                 if ( apnArray.length == 1){ return; }
             }
         }
-        xml =   '<?xml version="1.0" encoding="UTF-8" ?><ARCXML version="1.1">\r\n'
-                + '<REQUEST>\r\n<GET_FEATURES outputmode="xml" geometry="false" '
-                + 'envelope="true" featurelimit="14000" beginrecord="1">\r\n'
+        xml =   '<?xml version="1.0" encoding="UTF-8" ?><ARCXML version="1.1">\n'
+                + '<REQUEST>\n<GET_FEATURES outputmode="xml" geometry="false" '
+                + 'envelope="true" featurelimit="14000" beginrecord="1">\n'
                 + '<LAYER id="11" /><SPATIALQUERY subfields="'
                 + private_xmlQueryParams 
                 + ' GIS_FEATURES.DBA.CADASTRAL_PARCELS_ASSESSOR.X_COORD'
@@ -562,7 +562,7 @@ window.marker_module = function(){
             html += '</div>';
         }
 
-        //TODO: This adds a <br> at every space after index 24.
+        //This adds a <br> at every space after index 24 so that the marker isn't huge.
         function makeInfoHtml_addBr( match, p1, index, string ){
             if( index >= ( this.a + 24 ) ){
                 this.a += 24;
@@ -573,7 +573,6 @@ window.marker_module = function(){
         return html;
     }
 
-    // TODO: Simplify converSP();
     // Convert state plane coordinates to wgs 84 coordinates...I'm guessing anyway, not sure.
     function convertSP( uX, uY ){ // Copied from scopi! How about that!
         var sqrt = window.Math.sqrt, pow = window.Math.pow,
@@ -608,9 +607,9 @@ window.marker_module = function(){
             i = 0;
 
         for ( ; i < markersArray.length; ++i ){
-
-            // Used a setTimeout for visual effect only, nothing special.
             if ( markersArray[i] && /markerParent|smallCountyMarker/.test( markersArray[i].className ) ){
+
+                // Used a setTimeout for visual effect only, nothing special.
                 window.setTimeout(function( m ){ 
                     window.$('smallCountyMarker'+ m.id ).parentNode.removeChild( window.$('smallCountyMarker'+ m.id ) );
                     m.parentNode.removeChild( m ) }, ( window.Math.random() * 500 ), markersArray[i] );
@@ -620,6 +619,9 @@ window.marker_module = function(){
         }
     }
 
+    // This function attempts to format the owners name in a better way so that 
+    // it is more appealing to read. This required a lot of trial and error, if it
+    // isn't perfect who cares?
     function private_normalize( arg_ownerName ){ // This is basically of a hack job.
         var splitIt = '',
             words = '',
@@ -692,14 +694,14 @@ window.marker_module = function(){
         }
     }.bind( window.theMap );
 
-    function makeMultiFamilyHouseingMesssage(e){
+    function makeMultiFamilyHouseingMesssage( e ){
         var message = undefined,
             messageWidth = undefined,            
             markerBodyRect = this.parentNode.parentNode.markerBody.getBoundingClientRect(),
             thisRect = this.getBoundingClientRect(),
             data = this.getAttribute('data').split('<br>'),
             html = undefined;
-           
+        
         html =  '<div class="m"><div>Owner:<br>'
                 + 'Address:<br>'
                 + ( ( !/unknown/i.test( data[1] ) && /unknown|\w|\d/gi.test( data[2] ))? '<br>':'' )
@@ -721,9 +723,15 @@ window.marker_module = function(){
         message.style.padding = '15px';
         message.style.zIndex = '999999999999';
         message.style.color = 'black';
+        
+        // 'this' equals the anchor tag that the person is hovering thier mouse over,
+        // the anchor tag also holds the Apn number. 'm' is where the message is stored 
+        // so that onmouseout will have something easy to remove.
         this.m = message;
     }
 
+    // Attached this to a single letter global so so that when the person tries to
+    // make a url the url will be shorter.
     window.t = makeMultiFamilyHouseingMesssage;
 
     return {

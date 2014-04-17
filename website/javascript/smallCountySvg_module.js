@@ -1,13 +1,16 @@
 var smallCountySvg_module = function(){
+// The svg was made on a monitor that had an innerWidth of 1680 and innerHeight
+// of 927.
+
 var snohomishCountyCoords = {  MINX: 1245006.735392857,
                               MAXX: 1622342.497,
                               MINY: 275624.10969642834,
                               MAXY: 484507.123089286,
                               WIDTH: 377335.76160714286,
-                              HEIGHT: 208883.01339285763 };
-var smallCountySvgParent = window.$( 'small_county_svg' );
+                              HEIGHT: 208883.01339285763 },
+    smallCountySvgParent = window.$( 'small_county_svg' );
 
-   function smallCountyZoom(e){
+   function private_smallCountyZoom(e){
     var width = undefined, height = undefined,
        clientRect = this.getBoundingClientRect();
        delta = ( ( e.wheelDelta )? e.wheelDelta: ( evt = ( window.event || e ), evt.detail * - 120 ) );
@@ -26,20 +29,11 @@ var smallCountySvgParent = window.$( 'small_county_svg' );
     this.style.height = height +'px';
   }
 
-  function makePath(e){
-   var preFix = "L";
-   if(p.length===0){
-     preFix = "M";
-   }
-  console.log(  preFix+e.clientX+','+e.clientY);
-   p.push( preFix+e.clientX+','+e.clientY);
-
-  }
-var mouseMove = function( e ){
+var private_mouseMove = function( e ){
   var left = e.clientX - this.leftt - this.offSetLeft;
   var leftRatio = left/this.widthh;
   var spotX = 1680 * leftRatio;
-  var top = e.clientY - this.topp - this.offSetTop;
+  var top = e.clientY - this._top  - this.offSetTop;
   var topRatio = top / this.heightt;
   var spotY = 927 * topRatio;
   this.box.data.x = spotX+this.box.data.offsetX;
@@ -48,21 +42,21 @@ var mouseMove = function( e ){
   this.box.setAttribute('y', this.box.data.y-this.box.data.offsetY );
 }.bind( smallCountySvgParent );
 
-var mouseDown = function(e){
+var private_mouseDown = function(e){
     e.preventDefault();
     this.style.cursor = 'pointer';
     //this.clientRect = this.getBoundingClientRect();
     this.heightt = +this.style.height.replace(/px/,'');
     this.widthh = +this.style.width.replace(/px/,'');
     this.leftt = window.theMap.resizedMapWidth - (+this.style.right.replace(/px/,'') + this.widthh);
-    this.topp = window.theMap.resizedMapHeight - (+this.style.bottom.replace(/px/,'') + this.heightt);
+    this._top  = window.theMap.resizedMapHeight - (+this.style.bottom.replace(/px/,'') + this.heightt);
     this.offSetLeft = e.clientX - this.box.getBoundingClientRect().left;
     this.offSetTop = e.clientY - this.box.getBoundingClientRect().top;
-    this.addEventListener('mousemove', mouseMove);
-    document.addEventListener('mouseup', mouseUp);
-}.bind(  smallCountySvgParent );
+    this.addEventListener('mousemove', private_mouseMove);
+    document.addEventListener('mouseup', private_mouseUp);
+}.bind( smallCountySvgParent );
 
-var mouseUp = function(e){
+var private_mouseUp = function(e){
     var countyWidth = snohomishCountyCoords.MAXX-snohomishCountyCoords.MINX,
         countyHeight = snohomishCountyCoords.MAXY - snohomishCountyCoords.MINY,
         leftRatio = (this.box.data.x) / 1680,
@@ -74,8 +68,8 @@ var mouseUp = function(e){
         minY = snohomishCountyCoords.MAXY - ( countyHeight * topRatio ),
         maxY = snohomishCountyCoords.MAXY - ( countyHeight * bottomRatio );
 
-    this.removeEventListener('mousemove', mouseMove);
-    document.removeEventListener('mouseup', mouseUp);
+    this.removeEventListener('mousemove', private_mouseMove);
+    document.removeEventListener('mouseup', private_mouseUp);
     this.style.cursor = 'default';
     window.utilities_module.makeArcXMLRequest( minX, maxX,  minY, maxY );
     }.bind( smallCountySvgParent );
@@ -148,11 +142,6 @@ var mouseUp = function(e){
     for( var m = 0; m < arrayOfSmallCountyMarkers.length; ++m ){
       arrayOfSmallCountyMarkers[m].style.fill = this.box.style.fill;
     }
-//todo: this is a test
-//     window.$('test_rect').setAttribute('x', this.box.data.x);
-//     window.$('test_rect').setAttribute('y', this.box.data.y);
-//     window.$('test_rect').setAttribute('width', this.box.data.width);
-//     window.$('test_rect').setAttribute('height', this.box.data.height);
   }.bind( smallCountySvgParent );
 
   var smallCountySvgResize = function(){
@@ -169,7 +158,7 @@ var mouseUp = function(e){
   }.bind( smallCountySvgParent );
 
   var smallCountySvgInit = function(){
-      this.smallCountySvg.addEventListener( window.theMap.mousewheelevt , smallCountyZoom );
+      this.smallCountySvg.addEventListener( window.theMap.mousewheelevt , private_smallCountyZoom );
       this.smallCountySvg.addEventListener( 'mouseover', function(){ 
         this.mouseIsOver = true;
         this.g.style.fillOpacity = '1'; 
@@ -189,7 +178,7 @@ var mouseUp = function(e){
       this.smallCountySvg.theMap = window.theMap;
       this.smallCountySvg.g = this.smallCountySvg.querySelector('g');
       this.smallCountySvg.box = this.box;
-      this.box.addEventListener('mousedown', mouseDown);
+      this.box.addEventListener('mousedown', private_mouseDown);
       this.box.data = { x: undefined, y: undefined, width: undefined, height: undefined, offsetX: 0, offsetY: 0 };
       smallCountySvgResize();
   }.bind( { box: window.$('svg_rect'), smallCountySvg: smallCountySvgParent });

@@ -4,29 +4,25 @@ var main = function ( x ){
         parameters = window.parameters;
 
     theMap.panningAnimationTrueFalse = parameters.panningAnimationTrueFalse;
-    theMap.xyArray = [];
-    theMap.resizedMapHeight = undefined; 
-    theMap.resizedMapWidth = undefined;
-    theMap.viewPortWidth = window.innerWidth;
-    theMap.viewPortHeight= window.innerHeight;
-    theMap.left    = 0;
-    theMap.topp    = 0; // Can't use top (with one 'p').
+    theMap.resizedMapHeight = undefined;
+    theMap.resizedMapWidth  = undefined;
+    theMap.viewPortWidth  = window.innerWidth;
+    theMap.viewPortHeight = window.innerHeight;
+    theMap._left   = 0;
+    theMap._top    = 0;
     theMap._width  = undefined; // This gets modified when zooming. Can't use theMap.width have to use theMap._width.
     theMap._height = undefined; // This gets modified when zooming. Can't use theMap.height have to use theMap._height.
-    theMap._left = 0;
-    theMap._top = 0;
-    theMap.style.width  = theMap.width  +'px';// TODO: What is theMap.width again??
-    theMap.style.height = theMap.height +'px';
     theMap.calculateMarkerPosition = window.marker_module.calculateMarkerPosition;
     theMap.zoomPower = {'0': 350, '20': 700, '40': 1400, '60': 2800, '80': 5600, '100': 11200, '120': 22400, '140': 44800, '160': 89600, '180': 179200, '200': 358400 };
+    theMap.zoomPowerNumber = {'0': 0, '20': 1, '40': 2, '60': 3, '80': 4, '100': 5, '120': 6, '140': 7, '160': 8, '180': 9, '200': 10 };
     theMap.hiddenImage = $( 'theMap_secondary' );
     theMap.zoomStrartTimer = undefined;
     theMap.setTimeoutt = window.setTimeout.bind( window );
     theMap.clearTimeoutt = window.clearTimeout.bind( window );
-    theMap.presentMinX = parameters.fullZoomMinX;
-    theMap.presentMaxX = parameters.fullZoomMaxX;
-    theMap.presentMinY = parameters.fullZoomMinY;
-    theMap.presentMaxY = parameters.fullZoomMaxY;
+    theMap.presentMinX = parameters.FULLZOOMMINX;
+    theMap.presentMaxX = parameters.FULLZOOMMAXX;
+    theMap.presentMinY = parameters.FULLZOOMMINY;
+    theMap.presentMaxY = parameters.FULLZOOMMAXY;
     theMap.pan = { panningXYOld: undefined, panningXYNew: undefined,
                 oldMouseY: undefined, oldMouseX: undefined,
                 oldMouseXpan: undefined, oldMouseXpan: undefined,
@@ -44,57 +40,48 @@ var main = function ( x ){
     theMap.cssTransform = window.utilities_module.testProp(['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
     theMap.tempTransformText = '';
     theMap.tempTransformString = '';
-    theMap.ratio = 1;
-    theMap.dragDiv = window.$('think_of_a_name_for_this');
-    theMap.dragDiv.left = 0;
-    theMap.dragDiv.topp = 0;
+    theMap.dragDiv = window.$( 'drag_div' );
+    theMap.dragDiv._left = 0;
+    theMap.dragDiv._top = 0;
     theMap.mousewheelevt = ( /Firefox/i.test( window.navigator.userAgent ) )? "DOMMouseScroll" : "mousewheel";
     theMap.onPopState = undefined;
     theMap.infoFromUrl = false;
-    theMap.boxZoom = undefined; // TODO: This is for the box zoom test. Which works well by the way. Congrats.
+    theMap.boxZoom = undefined; // TODO: This is for the box zoom test.
     theMap.zoomAllTheWayOut = window.zoom_module.zoomAllTheWayOut;
-
     theMap.style[theMap.cssTransform] = 'translate3d(0px,0px,0px)';
-    // Calculate the initial max width and height, set the container size
-    // and set _width and _height to the container size.
     if ( theMap.panningAnimationTrueFalse ){
         theMap.pan.mouseMoveFunction = window.mapControl_module.mapDragAndAnimation;
     } else {
         theMap.pan.mouseMoveFunction = window.mapContainer_module.mapDragOnly;
     }
+
+    // Calculate the initial max width and height, set the container size
+    // and set _width and _height to the container size.
     window.utilities_module.calculateMaxWidthHeight();
     theMap.mapContainer.style.width = theMap.resizedMapWidth +'px';
     theMap.mapContainer.style.height = theMap.resizedMapHeight +'px';
     theMap._width  = theMap.resizedMapWidth;
     theMap._height = theMap.resizedMapHeight;
     window.options_module.initOptionsPanel();
-    theMap.addEventListener( 'load', utilities_module.firstMapLoad );
+    theMap.addEventListener( 'load', window.utilities_module.firstMapLoad );
+
     // Check the url and see if there is any search information in it.
     if ( window.location.search !== '' ){
         window.utilities_module.getInfoFromUrl();
     }
-    ;
-    // If there was a JSON object in the url, then assume there are valid coordinates
-    // to use and create the first map from those. Otherwise just zoom all the way out.
-    //if ( theMap.infoFromUrl ){
-        window.utilities_module.makeArcXMLRequest( theMap.presentMinX, theMap.presentMaxX, theMap.presentMinY, theMap.presentMaxY );
-        $( 'zoom_slider' ).style.top = theMap.sliderPosition +'px';
-    //} else {
-    //    theMap.zoomAllTheWayOut( true );
-    //}
+    window.utilities_module.makeArcXMLRequest( theMap.presentMinX, theMap.presentMaxX, theMap.presentMinY, theMap.presentMaxY );
+    $( 'zoom_slider' ).style.top = theMap.sliderPosition +'px';
 
     // If the panning animation is turned off, remove the slider from the options panel.
     if ( !parameters.panningAnimationTrueFalse ){
-        $('panning_control_row').parentElement.removeChild( $('panning_control_row') );
+        $('panning_control_row').parentNode.removeChild( $('panning_control_row') );
     }
 
     // addPageHasFocusClickHandling() makes it so when the person clicks out of the browser or tab and then 
     // clicks back in, they won't  inadvertently create an unwanted parcel marker, when what they really 
     // wanted was just to get focus back on the map so they can zoom or what ever they wanted to do.
     window.utilities_module.addPageHasFocusClickHandling();
-    //document.getElementById( 'iframe' ).addEventListener(''); // TODO: Does this still need to be here?
 
-    // These load event listeners need to be below window.utilities_module.createMarkersFromInfoFromUrl listener.
     theMap.addEventListener( 'load', mapControl_module.mapLoad );
     theMap.addEventListener( 'error', mapControl_module.mapLoadError );
     window.citiesTownsSvg_module.cityCoordinatesInit();
@@ -111,12 +98,12 @@ window.onresize = function( e ){
 window.onload = window.main;
 
 /*TODO http://jsfiddle.net/jPqBh/6/ ☑
-    * For some reason the map blinks when there is only APN's in the search part of the Url, not when JSON object is in it.
-    * make the div around the spinning gear easier to click when the options div is open, it is too small.
+    * appears to be done: For some reason the map blinks when there is only APN's in the search part of the Url, not when JSON object is in it.
+    * appears to be done:make the div around the spinning gear easier to click when the options div is open, it is too small.
     * do something about the "xml" global variable.
     * Done: add buttons to slider for plus and minus.
-    * makeURL() doesn't work correctly in IE, also IE doesn't like long urls.
-    * is 'smoothTransition()' still needed?
+    * appears to be done: makeURL() doesn't work correctly in IE, also IE doesn't like long urls.
+    * done: is 'smoothTransition()' still needed?
     * Done: the apn search text input is non selectable in IE.
 */
 // svg zoom thingy http://jsbin.com/OPeJujEf/4/edit

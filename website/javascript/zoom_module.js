@@ -2,57 +2,79 @@ window.zoom_module = function (){
     var math = window.Math,
         theMap = window.theMap;// TODO: can this be deleted?
 
+    // TODO: This is the old way of calculating the new coordinates to send to the server.
+    // I'm not even sure exactly how it works anymore :/, but here is an attempt at explaining it.
     var centerMainImage = function ( mousex, mousey, mouseX, mouseY ){
+        var presentStatePlaneWidth = this.presentMaxX - this.presentMinX,
+            presentStatePlaneHeight = this.presentMaxY - this.presentMinY,
 
-            // Subtract the max coord from the min coord and divide by 2. 
-        var halfX = ( this.presentMaxX - this.presentMinX ) / 2, //example: 1311592.01401389 - 1301107.16345745 = 10484.850556439953 / 2 = 5242.4252782199765
-            halfY = ( this.presentMaxY - this.presentMinY ) / 2,
+            // Calculate a multiplier to convert the old coordinates to new coordinates.
+            // _width and _height are the zoomed in or out width and height.
+            xMultiplier = presentStatePlaneWidth / this._width, //example: ( 1311592.01401389 - 1301107.16345745 ) / 2940.414201183432 = 3.5657733363619664. This is the X multiplier.
+            yMultiplier = presentStatePlaneHeight / this._height, 
 
-            // Make the first x,y multiplier, these are used to scale the screen coordinates to the map.
-            xMultiplier = ( this.presentMaxX - this.presentMinX ) / this._width, //example: ( 1311592.01401389 - 1301107.16345745 ) / 2940.414201183432 = 3.5657733363619664. This is the X multiplier.
-            yMultiplier = ( this.presentMaxY - this.presentMinY ) / this._height,
+            // Find the state plane coordinate that is half way between the min and max. 
+            // halfStatePlaneWidth,halfStatePlaneHeight = middle point;
+            halfStatePlaneWidth = ( presentStatePlaneWidth ) / 2, //example: 1311592.01401389 - 1301107.16345745 = 10484.850556439953 / 2 = 5242.4252782199765
+            halfStatePlaneHeight = ( presentStatePlaneHeight ) / 2,
 
-            // Multiply the mouse position on the image inside the container (not the screen) by the Multiplier. 
-            // Add the current min X coordinate to that.
-            // Subtract the difference between current max X and min X divided by 2 and 
-            // mouse position on the image inside the container Div multiplied 
-            // by the multiplier (x coords only, y coords are slightly different).
-            minxOld = ( ( mousex * xMultiplier ) + this.presentMinX ) - halfX, //example: ( ( 1310.9346646942802 * 3.5657733363619664 ) + 1301107.16345745 ) - 5242.4252782199765 = 1300539.2340523093 
-            maxxOld = ( ( mousex * xMultiplier ) + this.presentMaxX ) - halfX, 
-            minyOld = ( ( this._height - mousey ) * yMultiplier ) + this.presentMinY - halfY,
-            maxyOld = ( ( this._height - mousey ) * yMultiplier ) + this.presentMaxY - halfY,
+            // Adjust the coordinates so that the spot the person was zooming in on is 
+            // in the center, by converting that spot to state plane coordinates, then 
+            // subtracting half the width and height from all corners. That will move 
+            // that spot to the center.
+            minx = ( ( mousex * xMultiplier ) + this.presentMinX ) - halfStatePlaneWidth, //example: ( ( 1310.9346646942802 * 3.5657733363619664 ) + 1301107.16345745 ) - 5242.4252782199765 = 1300539.2340523093 
+            maxx = ( ( mousex * xMultiplier ) + this.presentMaxX ) - halfStatePlaneWidth, 
+            miny = ( ( this._height - mousey ) * yMultiplier ) + this.presentMinY - halfStatePlaneHeight,
+            maxy = ( ( this._height - mousey ) * yMultiplier ) + this.presentMaxY - halfStatePlaneHeight,
 
-            // Subtract TODO: finish this
-            nowX = maxxOld - minxOld,
-            nowY = maxyOld - minyOld,
-
-            // This calculates the zooming in or zooming out.
-            // The resizedMapHeight and width are divided by the viewPortHeight ( viewPortWidth apparently works also )
-            // which returns a ratio that the zoomPower is divided by so the height zoomPower will be different than the width zoomPower.
-            // Then then height zoomPower is it subtracted from nowX and width zoomPower is subtracted nowY.
-            soonX = nowX - ( /* I got this by accident */ this.zoomPower[this.sliderPosition] / ( this.resizedMapHeight / this.viewPortHeight ) ),
-            soonY = nowY - ( /* I got this by accident */ this.zoomPower[this.sliderPosition] / ( this.resizedMapWidth / this.viewPortHeight ) );
+            // This calculates the zooming in or zooming out by expanding or contracting 
+            // the state plane width and height accordingly.
+            doTheZoomWidth = presentStatePlaneWidth - ( /* I got this by accident */ this.zoomPower[this.sliderPosition] / ( this.resizedMapHeight / this.viewPortHeight ) ),
+            doTheZoomHeight = presentStatePlaneHeight - ( /* I got this by accident */ this.zoomPower[this.sliderPosition] / ( this.resizedMapWidth / this.viewPortHeight ) );
         
-        halfX = soonX / 2;
-        halfY = soonY / 2;
-        minxOld = minxOld + halfX;
-        maxxOld = maxxOld - halfX;
-        minyOld = minyOld + halfY;
-        maxyOld = maxyOld - halfY;
-        xMultiplier = ( maxxOld - minxOld ) / this.resizedMapWidth;
-        yMultiplier = ( maxyOld - minyOld ) / this.resizedMapHeight;
-        halfX = ( maxxOld - minxOld ) / 2;
-        halfY = ( maxyOld - minyOld ) / 2; 
+        // Calculate the half width and height of the new zoomed width and height.
+        halfStatePlaneWidth = doTheZoomWidth / 2;
+        halfStatePlaneHeight = doTheZoomHeight / 2;
+
+        // Adjust the min/max state plane coordinates.
+        minx = minx + halfStatePlaneWidth;
+        maxx = maxx - halfStatePlaneWidth;
+        miny = miny + halfStatePlaneHeight;
+        maxy = maxy - halfStatePlaneHeight;
+
+        // Calculate a new half width and height again.
+        halfStatePlaneWidth = ( maxx - minx ) / 2;
+        halfStatePlaneHeight = ( maxy - miny ) / 2; 
+
+        // Change course a bit and calculate a multiplier for the new min/max
+        // coordinates by the size that the final map will be on the screen.
+        xMultiplier = ( maxx - minx ) / this.resizedMapWidth;
+        yMultiplier = ( maxy - miny ) / this.resizedMapHeight;
+
+        // Adjust the mouseX (e.clientX) and mouseY (e.clientY) so that they reflect
+        // where they are on the mapContainer ( may be smaller than the actual screen)
+        // if the screen is bigger than the window.parameters.MAX_IMG_PIXELS contestant.
         mouseX = mouseX - this.containerStyleLeft;
         mouseY = mouseY - this.containerStyleTop;
-        minxOld = halfX + minxOld - ( mouseX * xMultiplier );
-        maxxOld = halfX + maxxOld - ( mouseX * xMultiplier );
-        maxyOld = halfY + maxyOld - ( ( this.resizedMapHeight - mouseY ) * yMultiplier );
-        minyOld = halfY + minyOld - ( ( this.resizedMapHeight - mouseY ) * yMultiplier );
-        window.utilities_module.makeArcXMLRequest( minxOld , maxxOld , minyOld, maxyOld );
-    }.bind( window.theMap );
+        
+        // Finish it by moving the spot that the person was zooming in/out away from
+        // the center and back to where it was originally. Previously we subtracted the 
+        // half width and height to move the spot to the center, now we are adding the 
+        // half width and height back and subtracting converted mouseX(Y) coordinates
+        // so that the spot will be under their mouse like they expect.
+        minx = halfStatePlaneWidth + minx - ( mouseX * xMultiplier );
+        maxx = halfStatePlaneWidth + maxx - ( mouseX * xMultiplier );
+        maxy = halfStatePlaneHeight + maxy - ( ( this.resizedMapHeight - mouseY ) * yMultiplier );
+        miny = halfStatePlaneHeight + miny - ( ( this.resizedMapHeight - mouseY ) * yMultiplier );
+        
+        // So basically: 
+        // 1) move the spot the person was zooming at to the center.
+        // 2) zoom in/out.
+        // 3) move the spot back under the mouse pointer.
 
-    
+        // Send it off to make some XML.
+        window.utilities_module.makeArcXMLRequest( minx, maxx, miny, maxy );
+    }.bind( window.theMap );
 
     var plus = function (){
         zoomInOut( {
@@ -60,7 +82,7 @@ window.zoom_module = function (){
                     clientX: this.viewPortWidth/2,
                     clientY: this.viewPortHeight/2,
                     } );
-    }.bind( window.theMap );
+    }
 
     var minus = function (){
         zoomInOut( {
@@ -68,7 +90,7 @@ window.zoom_module = function (){
                     clientX: this.viewPortWidth/2,
                     clientY: this.viewPortHeight/2,
                     } );
-    }.bind( window.theMap );
+    }
 
     function sliderMouseDown( e ){
         document.body.style.cursor = 'pointer';
@@ -87,9 +109,12 @@ window.zoom_module = function (){
         e.stopImmediatePropagation();
     }.bind( window.theMap )
 
+    // This is fairly lazy, I didn't want to make a whole new zoom function,
+    // probably should thou because if the person zooms in and out to fast,
+    // it will get confused.
     var sliderMove = function ( e ){
         var z = this.round( ( e.clientY - this.theMap.zoom_slider_container_styleTop ) / 11 ) * 10; 
-        if ( z >= -10 && z < 210 && z  !== this.theMap.sliderPosition && z % 20 === 0 ){
+        if ( z >= -10 && z < 210 && z !== this.theMap.sliderPosition && z % 20 === 0 ){
             if ( z > this.theMap.sliderPosition ){
                 zoomInOut( {
                             wheelDelta: -120,
@@ -108,24 +133,19 @@ window.zoom_module = function (){
         }
     }.bind( {   theMap: window.theMap,
                 zoom_slider: window.$( 'zoom_slider' ).style,
-                round: Math.round
+                round: Math.round,
             });
 
     var zoomInOut = function( e, slider ){
-         // TODO: Delete these timers.
-         //console.time( 'timer' );
-         //console.log( 'zoomInOut',e );
-        //var start = window.performance.now();
-        var //time = 1000,
-            evt = undefined, //equalize event object
+        var evt = undefined, // This is need for the delta.
             delta = ( ( e.wheelDelta )? e.wheelDelta: ( evt = ( window.event || e ), evt.detail * - 120 ) ),
             clientX = e.clientX - this.containerStyleLeft,
             clientY = e.clientY - this.containerStyleTop,
+        
             // Find where the mouse is on the map img its self, not where the mouse is in the viewport (aka screen).
-            XcoordOnMapImg = ( clientX - this.dragDiv.left ) - this.left,
-            YcoordOnMapImg = (  clientY - this.dragDiv.topp ) - this.topp,
-            markers = this.markersArray,
-            i = markers.length,
+            XcoordOnMapImg = ( clientX - this.dragDiv._left ) - this._left,
+            YcoordOnMapImg = (  clientY - this.dragDiv._top ) - this._top ,
+            markers = this.markersArray, i = markers.length,
             ratio = undefined,
             xMultiplier = undefined,
             yMultiplier = undefined,
@@ -152,18 +172,14 @@ window.zoom_module = function (){
             }
         }
         this.className = "smoothTransition";
-        this.left = this.left - ( ( XcoordOnMapImg / this._width ) * ( ratio * this._width ) ) + XcoordOnMapImg ;
-        this.topp = this.topp - ( ( YcoordOnMapImg / this._height ) * ( ratio * this._height ) - YcoordOnMapImg );
+        this._left = this._left - ( ( XcoordOnMapImg / this._width ) * ( ratio * this._width ) ) + XcoordOnMapImg ;
+        this._top  = this._top  - ( ( YcoordOnMapImg / this._height ) * ( ratio * this._height ) - YcoordOnMapImg );
         this._height = this._height * ratio;
         this._width  = this._width * ratio;
-        //this.style.left   = this.left +'px';
-        //this.style.top    = this.topp +'px';
-        //this.style.height = this._height +'px';
-        //this.style.width  = this._width +'px';
         if( ratio === 2 ){
             x = clientX - ( this.resizedMapWidth / 2 );
             y = clientY - ( this.resizedMapHeight / 2 );
-            this.tempTransformString = 'translate3d('+(0-x)+'px,'+(0-y) +'px, 0px) scale(2)' + this.tempTransformString;
+            this.tempTransformString = 'translate3d('+ (0-x) +'px,'+ (0-y) +'px, 0px) scale(2)' + this.tempTransformString;
         } else if( ratio === 0.5 ){
             x = ( clientX - (this.resizedMapWidth / 2 ) )/2;
             y = ( clientY - (this.resizedMapHeight / 2 ) )/2;
@@ -171,25 +187,19 @@ window.zoom_module = function (){
         }
         this.style[this.cssTransform] = this.tempTransformText + this.tempTransformString;
         if ( i  !== 0 ){
-            var m = undefined;
             xMultiplier = ( this.presentMaxX - this.presentMinX ) / this._width;
             yMultiplier = ( this.presentMaxY - this.presentMinY ) / this._height;
-            while( i--){
+            while( i-- ){
                 m = markers[i];
-                m.styleLeft = ( ( m.statePlaneCoordX - this.presentMinX ) / xMultiplier ) - m.offsetwidth - 3;
-                m.styleTop  = ( ( this.presentMaxY - m.statePlaneCoordY ) / yMultiplier ) - m.offsetheight;
-                //m.style.cssText += 'transition: all 0.4s cubic-bezier( 0,0,0.25,1 ); left:'+ ( m.styleLeft + this.left ) +'px; top:'+ ( m.styleTop + this.topp ) +'px;';
-                m.style.transition = 'all 0.4s cubic-bezier( 0,0,0.25,1 )';
-                m.style[this.cssTransform] = 'translate3d( '+ ~~( markers[i].styleLeft + this.left ) +'px, '+ ~~( markers[i].styleTop + this.topp ) +'px,0px)';
+                markers[i].styleLeft = ( ( markers[i].statePlaneCoordX - this.presentMinX ) / xMultiplier ) - markers[i].offsetwidth - 3;
+                markers[i].styleTop  = ( ( this.presentMaxY - markers[i].statePlaneCoordY ) / yMultiplier ) - markers[i].offsetheight;
+                markers[i].style.transition = 'all 0.4s cubic-bezier( 0,0,0.25,1 )';
+                markers[i].style[this.cssTransform] = 'translate3d( '+ ~~( markers[i].styleLeft + this._left ) +'px, '+ ~~( markers[i].styleTop + this._top  ) +'px,0px)';
             }
         }
         if ( !slider ){
-            this.zoomStartTimer = this.setTimeoutt( function( newMousePosition, x, y ){ zoomStart( newMousePosition, x, y ); window.utilities_module.removeTransitionFromMarkers(); }, 1000, [ e.clientX - this.containerStyleLeft - this.dragDiv.left - this.left, e.clientY - this.containerStyleTop - this.dragDiv.topp - this.topp ], e.clientX, e.clientY );
+            this.zoomStartTimer = this.setTimeoutt( function( newMousePosition, x, y ){ zoomStart( newMousePosition, x, y ); window.utilities_module.removeTransitionFromMarkers(); }, 1000, [ e.clientX - this.containerStyleLeft - this.dragDiv._left - this._left, e.clientY - this.containerStyleTop - this.dragDiv._top - this._top  ], e.clientX, e.clientY );
         }
-        //window.pageHasFocus = true;
-        //console.timeEnd( 'timer' );
-       // var end = window.performance.now();
-        //console.log( end-start );
     }.bind( window.theMap );
 
     // TODO: rename newMousePostion and x,y to be more readable.
@@ -197,58 +207,20 @@ window.zoom_module = function (){
     // @params x,y = mouse x,y coord on the monitor (e.clientX, e.clientY);
     var zoomStart = function( newMousePosition, x, y ){
         if ( this.sliderPosition === 200 ){ //zoomed all the way out
-            fullZoomOut();
+            zoomAllTheWayOut();
         } else {
-            window.zoom_module.centerMainImage( newMousePosition[0], newMousePosition[1], x, y );
+            centerMainImage( newMousePosition[0], newMousePosition[1], x, y );
         }
     }.bind( window.theMap );
 
-    var fullZoomOut = function (){// TODO: is zoomALLTheWayOut() better??
-            var fullZoomUrl = window.fullZoomUrl,
-                xml = window.xml;
-
-        if (  false && fullZoomUrl.height === this.resizedMapHeight && fullZoomUrl.width === this.resizedMapWidth ){
-                
-            //TODO: put this is it's own function?
-            //TODO: fullzoom is a global.
-            // This is an attempt to speed up zooming full out, the new image is used to check if the
-            // fully zoomed out image is still on the server ( my guess is that it gets cleaned up after
-            // about 10 min.), if so it will pass it to the onload function which will zip it to the setImg();
-            // If however the image isn't there, then load the fully zoomed out image as usual using default
-            // parameters.
-            window.utilities_module.makeArcXMLRequest( fullZoomUrl.minxOld, fullZoomUrl.maxxOld, fullZoomUrl.minyOld, fullZoomUrl.maxyOld );
-            // var img = new Image();
-            // img.onload = function(){
-            //     console.log('onload');
-            //     xml.getElementsByTagName( "OUTPUT")[0].setAttribute( 'url', fullZoomUrl.src );
-            //     xml.getElementsByTagName( "ENVELOPE")[0].setAttribute( 'minx', fullZoomUrl.minxOld );
-            //     xml.getElementsByTagName( "ENVELOPE")[0].setAttribute( 'maxx', fullZoomUrl.maxxOld );
-            //     xml.getElementsByTagName( "ENVELOPE")[0].setAttribute( 'miny', fullZoomUrl.minyOld );
-            //     xml.getElementsByTagName( "ENVELOPE")[0].setAttribute( 'maxy', fullZoomUrl.maxyOld );
-            //     window.mapControl_module.setImg();
-            // }
-            // img.onerror = function(){
-            //     window.utilities_module.makeArcXMLRequest( window.parameters.fullZoomMinX, window.parameters.fullZoomMaxX, window.parameters.fullZoomMinY, window.parameters.fullZoomMaxY );
-            // }
-            // img.src = fullZoomUrl.src;
-            // document.body.className = 'waiting';
-            // this.className = 'waiting';
-        } else {
-            window.utilities_module.makeArcXMLRequest( window.parameters.fullZoomMinX, window.parameters.fullZoomMaxX, window.parameters.fullZoomMinY, window.parameters.fullZoomMaxY );
-        }
-    }.bind( window.theMap );
-
-    var zoomAllTheWayOut = function( arg_firstLoad ){
-        if ( this.sliderPosition !== 200 || arg_firstLoad ){
-            this.sliderPosition = 200;
-            this.zoomSliderStyle.top = this.sliderPosition +'px';
-            window.utilities_module.makeArcXMLRequest( window.parameters.fullZoomMinX, window.parameters.fullZoomMaxX, window.parameters.fullZoomMinY, window.parameters.fullZoomMaxY );
-        }
+    var zoomAllTheWayOut = function(){
+        this.sliderPosition = 200;
+        this.zoomSliderStyle.top = this.sliderPosition +'px';
+        window.utilities_module.makeArcXMLRequest( window.parameters.FULLZOOMMINX, window.parameters.FULLZOOMMAXX, window.parameters.FULLZOOMMINY, window.parameters.FULLZOOMMAXY );
     }.bind( theMap );
 
     return {
         zoomStart: zoomStart,
-        fullZoomOut: fullZoomOut,
         zoomAllTheWayOut: zoomAllTheWayOut,
         plus: plus,
         minus: minus,
@@ -264,7 +236,7 @@ window.zoom_module = function (){
 //http://jsbin.com/zasebewu/8/edit
 /* TODO
     * clean up makeArcXMLRequest().
-    * make it so the pan works on full zoom out.
+    * done: make it so the pan works on full zoom out.
     * Done: rename "t".
     * delete unused properties and methods in the window.zoom_module.js return object.
     * make it so the marker information ( message, image url ) is saved in local storage.

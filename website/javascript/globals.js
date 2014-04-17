@@ -1,9 +1,7 @@
 
 var // TODO: Only parameters or default values should go in parameters.
-    parameters = {
-                    //http://korz.tomodo.me/ 
-                    //http://192.168.56.1:1000?
-        urlPrefix: 'http://forwarding-proxy.appspot.com/',
+    parameters = { 
+        urlPrefix: 'http://forwarding-proxy.appspot.com/',//http://192.168.56.1:1000
         apnUrl: 'https://www.snoco.org/proptax/search.aspx?parcel_number=',
         searchByApnUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.3.1&Form=True&Encode=False&CustomService=Query",
         mapUrl: "gis.snoco.org/servlet/com.esri.esrimap.Esrimap?ServiceName=Assessor&ClientVersion=9.4.1&Form=True&Encode=False?",    
@@ -21,10 +19,10 @@ var // TODO: Only parameters or default values should go in parameters.
         },
         showTwoMapsAtTheSameTime: true,
         homesSoldYears: { years: [ [ '2014', 'rgba(255, 0, 0, 0.5)' ], [ '2013', 'rgba(255, 255, 0, 0.5)' ], [ '2012', 'rgba(173, 216, 230, 0.5)' ] ], },
-        fullZoomMinX: 1244781.997,
-        fullZoomMaxX: 1622342.497,
-        fullZoomMinY: 284336.973,
-        fullZoomMaxY: 477544.783,
+        FULLZOOMMINX: 1244781.997,
+        FULLZOOMMAXX: 1622342.497,
+        FULLZOOMMINY: 284336.973,
+        FULLZOOMMAXY: 477544.783,
         panningAnimationMultiplier: 20,// If this default is changed from 20, window.panning_module.panningControlsliderMove needs to be changed also with 1 added to it.
         panningAnimationTrueFalse: true, 
         panningAnimationTime: 1000,
@@ -37,19 +35,13 @@ var // TODO: Only parameters or default values should go in parameters.
     mainAjaxHTTPRequest = new XMLHttpRequest(),
     timeToLoadArray = [], // Used to calculate panning duration.
     startSend = undefined, // Used to calculate panning duration.
-    
-    // TODO: ↓ this is for the address search ↓
-    //MapFrame = { GCvalue : [], setupGeocode: function(){ console.log('mapframe request') } },
     panningObj = {//TODO: Should this be a global?
         panningAnimationMultiplier: window.parameters.panningAnimationMultiplier,
         panningAnimationTime: window.parameters.panningAnimationTime,
     },
     xml = undefined,
-    fullZoomUrl = { satelliteView: undefined, src: undefined, height: undefined, width: undefined, minxOld: undefined, minyOld: undefined, maxxOld: undefined, maxxOld: undefined };
-    addRemoveEventListenersObj = undefined,
     throttleResize = undefined,
     pageHasFocus = true, // TODO: this is a test.
-    addRemoveEventListenersObj = undefined,
     popStateCounter = 0,
     t = undefined;// This is used to make the multi family markers shorter, look in marker_module for assignment.
 

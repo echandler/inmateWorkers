@@ -12,7 +12,7 @@ function map2012(){
         paddleCoords = { top: 0, bottom: theMap.newImgHeight, left: 0, right: theMap.newImgWidth},
         topBottomDivParams = { "height": 20, width: ( theMap.newImgWidth * 0.1 ) }; //width = 10%;
         leftRightDivParams = { height: ( theMap.newImgHeight * 0.1 ), width: 20 }; //height = 10%;
-    try{ document.getElementById('auxMapContainer').parentElement.removeChild( document.getElementById('auxMapContainer') ); } catch( e ){ console.log(e); };    
+    try{ document.getElementById('auxMapContainer').parentNode.removeChild( document.getElementById('auxMapContainer') ); } catch( e ){ console.log(e); };    
     var map2012Container = document.createElement('div');
         map2012Container.id = 'auxMapContainer';
         map2012Container.style.position = 'absolute'

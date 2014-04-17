@@ -8,8 +8,6 @@ var scaleBarSvg_module = function(){
         resizeHandle = window.$('scale_resize_handle'),
         pivotHandle = window.$('scale_pivot_handle');
 
-    
-
   function handleMouseDown(e){
       var feetDiv = document.createElement('div'),
           theMap = window.theMap;
@@ -128,10 +126,6 @@ var scaleBarSvg_module = function(){
           theBar.setAttribute( 'd', 'M5,12  l'+ (width-5)+',0 l0,5 l-'+ (width-5)+',0 z' );
           pivotHandle.setAttribute( 'd', "M5,20 l10,0 l0,-10 l-5,-10 l-5,+10 z" );
         }
-        // horiz
-        // left = M10,499 l10,0 l0,-10 l-10,0 l-10,5 l10,5 z;
-        // right = M10,11 l10,0 l0,-10 l-10,0 l-10,5 l10,5 z;
-        // bar = M13,5 l0,499 l5,0 l0,-499 z;
     }
 
     var scaleBarResize = function(){
@@ -160,6 +154,7 @@ var scaleBarSvg_module = function(){
                                   height: 21,
                           };
       scaleBarResize();
+      theScaleBarParent.style.opacity = 1;
     }
 
     // http://jsbin.com/xopidezu/5/edit

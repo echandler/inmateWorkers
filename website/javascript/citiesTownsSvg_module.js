@@ -1,8 +1,10 @@
     citiesTownsSvg_module = function(){
     var svg_container = window.$( 'svg_container' ),
         citiesGroup = window.$( 'cities_group' );
-        private_citiesPolylineElementsArray = []; // This gets populated by private_addPolyLinesToSvgElement().
+        private_citiesPolylineElementsArray = []; // This gets populated by private_addCityPolyLinesToSvgContainer().
 
+    // This was used for manually clicking around the cities to get the state place coords.
+    // It isn't used by anything.
     function collectStatePlaneCoords(e){
         if( !window.points ){ window.points = []; }
         var xMultiplier = ( this.presentMaxX - this.presentMinX ) / this.resizedMapWidth;
@@ -27,20 +29,17 @@
         }
     }
 
-    // TODO: This is a test.
-    var  resizeSvgCities = function(){
+    var  resizeAllSvgCities = function(){
             var cities = private_citiesPolylineElementsArray;
-            this.container.style.top = ( 0 - this.theMap.dragDiv.topp ) +'px';
-            this.container.style.left = ( 0 - this.theMap.dragDiv.left ) +'px';
+            this.container.style.top = ( 0 - this.theMap.dragDiv._top ) +'px';
+            this.container.style.left = ( 0 - this.theMap.dragDiv._left ) +'px';
             
             for( var i = 0; i < cities.length; ++i ){
-
-                //TODO: This has to go outside of the module then get the city.
-                resizeSVGElement( private_citiesPolylineElementsArray[i] );
+                resizeOneSvgCity( private_citiesPolylineElementsArray[i] );
             }
         }.bind( { theMap: window.theMap, container: svg_container } );
 
-   var resizeSVGElement = function( arg_cityPolyline ){
+    var resizeOneSvgCity = function( arg_cityPolyline ){
         var xMultiplier = ( this.presentMaxX - this.presentMinX ) / this.resizedMapWidth,
             yMultiplier = ( this.presentMaxY - this.presentMinY ) / this.resizedMapHeight,
             index = 0,
@@ -81,21 +80,10 @@
                                     y: ( heightOfBox / 2) + boxClientXY.start.y + this.containerStyleTop };
             
             window.city = arg_name;
-            //private_boxZoom_cityMapLoad(); // TODO: This isn't used anymore.
-            // Move the maps virtual left and top so that the middle of the zoom box is in the middle of the screen.
-            this.left = ( mapHalfWidthPoint - centerPointOfBox.x ) ;
-            this.topp = ( mapHalfHeightPoint - centerPointOfBox.y) ;
-            window.mapControl_module.boxZoom_doTheZoom( {width: widthOfBox, height: heightOfBox, x: mapHalfWidthPoint, y: mapHalfHeightPoint });
+            this._left = ( mapHalfWidthPoint - centerPointOfBox.x ) ;
+            this._top  = ( mapHalfHeightPoint - centerPointOfBox.y) ;
+            window.boxZoom_module.boxZoom_doTheZoom( {width: widthOfBox, height: heightOfBox, x: mapHalfWidthPoint, y: mapHalfHeightPoint });
         }.bind( window.theMap );
-
-    function private_boxZoom_cityMapLoad( e ){
-        window.$('theMap_misc_container').style.opacity = '0';
-        window.theMap.addEventListener( 'load', resetMiscContainerOpacity );
-        function resetMiscContainerOpacity( e ){
-            window.$('theMap_misc_container').style.opacity = '1';
-            this.removeEventListener( 'load', resetMiscContainerOpacity );
-        };
-    }
 
     // TODO: This is a hack job.
     function cityCoordinatesInit(){
@@ -103,21 +91,21 @@
             if( this.theMap.sliderPosition <= 160 ){
                 this.citiesGroup.style.display = 'none'; 
             } else {
-                resizeSvgCities();
-                this.citiesGroup.style.display = ''; 
+                resizeAllSvgCities();
+                this.citiesGroup.style.display = '';
             }
             this.cities_svg.style.zIndex = '';
             this.cities_svg.style.opacity = '1';
-        }.bind( { cities_svg: svg_container, theMap: window.theMap, resizeSvgCities: resizeSvgCities, citiesGroup: citiesGroup } ) );
+        }.bind( { cities_svg: svg_container, theMap: window.theMap, resizeAllSvgCities: resizeAllSvgCities, citiesGroup: citiesGroup } ) );
         window.theMap.mapContainer.addEventListener( window.theMap.mousewheelevt, function(){
             this.style.opacity = '0';
             this.style.zIndex = '-1000';
         }.bind( svg_container ));
-        private_addPolyLinesToSvgElement();
+        private_addCityPolyLinesToSvgContainer();
         private_randomCityColors();
     }
 
-    var private_addPolyLinesToSvgElement = function(){
+    var private_addCityPolyLinesToSvgContainer = function(){
         var parent = citiesGroup,
             polyLine = undefined,
             citiesArray = Object.keys( private_cityPolylines ),
@@ -132,9 +120,6 @@
             polyline.setAttribute( 'onmouseout', "this.style.fillOpacity='';" );
             
             polyline.upperCaseName = citiesArray[i];
-            // polyline.addEventListener('click', function( e ){
-            //     e.stopImmediatePropagation();
-            // }.bind( { boxZoom: boxZoom_city, upperCaseName: citiesArray[i], self: polyline }) );
             polyline.addEventListener( 'mousedown', svgCitiesMouseDown );
             polyline.clickAble = true;
             polyline.theMap = window.$('theMap_primary');
@@ -149,10 +134,10 @@
     }
 
     var svgCitiesSetOpacityToZero = function( e ){
-        this.cities_svg.style.opacity = '0';
-    }.bind( { cities_svg: svg_container } );
+        this.style.opacity = '0';
+    }.bind( svg_container );
 
-    var svgCitiesMouseDown = function ( e ){//TODO: Should this be an eventListener on each city instead?
+    var svgCitiesMouseDown = function ( e ){
             var obj = { boxZoom: boxZoom_city, self: this, theMap: this.theMap, theMapContainer: this.theMapContainer, citiesGroup: this.citiesGroup };
             var citiesMouseMove = function ( e ){
                         if ( e.clientY - this.theMap.pan.oldMouseY < 5 && e.clientX - this.theMap.pan.oldMouseX < 5 ){ return; }
@@ -201,45 +186,38 @@
         DARRINGTON: '1451161,464170 1454953,464119 1454943,463436 1454785,463142 1454739,462372 1454853,461783 1455034,461375 1455056,461194 1454988,461058 1454875,460945 1454898,460764 1455962,459858 1456143,459699 1456189,459450 1455509,458839 1455056,458839 1455056,458341 1454988,458001 1454173,457956 1454264,456303 1454626,456280 1454626,456212 1455079,456212 1455102,455918 1455917,455238 1456574,454310 1456415,454174 1456347,453562 1451207,453494 1451184,456846 1451025,456846 1450912,456733 1450844,456506 1450708,456393 1450278,456393 1449848,456235 1449848,459881 1449553,459858 1449531,460560 1449803,460560 1449825,460900 1451184,460288 1451161.810043009,464170.87619426264',
     };
 
+    // This object is holds the top upper left corner and bottom lower right
+    // corner of a virtual box that is used to by boxZoom_city() to zoom into 
+    // the city. Sort of funky but it works.
     var private_zoomBoxesForCities = {
-        SNOHOMISH: { start: {x: 1324268.0821190232, y: 350804.9793392833}, end: {x: 1335726.87378569, y: 332597.7293392833} },
-        ARLINGTON: { start: {x: 1301377.4053758, y: 446269.9415842}, end: {x: 1335624.0720425, y: 414663.2749175} },
-        MARYSVILLE: { start: {x: 1302400.1523996438, y: 427973.16717942106}, end: {x: 1328684.7047805963, y: 374363.7767032307} },
-        EVERETT: { start: {x: 1282538.047, y: 383300.631125 }, end: {x: 1314675.6371785714, y: 319250.18916071416 } },
-        BOTHELL: { start: {x: 1291714.8749815468, y: 300659.55271042034}, end: {x: 1312118.77081488, y: 285826.531877087} },
-        STANWOOD: { start: {x: 1262517.2243287, y: 464077.0229204}, end: {x: 1279143.8909953, y: 451357.0229204} },
-        LYNNWOOD: { start: {x: 1266997.8534813, y: 318103.4906453}, end: {x: 1292571.1868146, y: 291703.4906453} },
-        'MILL CREEK': { start: {x: 1297991.74191126, y: 324647.6231621667} , end: {x: 1313934.4085779267, y: 308659.6648288333} },
-        'GRANITE FALLS': { start: {x: 1352078.3701986, y: 407368.1212113}, end: {x: 1371558.3701986, y: 391034.7878780} },
-        MUKILTEO: { start: {x: 1272670.2636002866, y: 350924.6177286121}, end: {x: 1285351.7874098106, y: 322311.92963337427} },
-        MONROE: { start: {x: 1350639.2570856968, y: 325820.4538095343}, end: {x: 1370273.1945856968, y: 307341.4538095343} },
-        EDMONDS: { start: {x: 1255669.095743157, y: 317278.94987147086}, end: {x: 1275563.2362193475, y: 287318.84987147106} },
-        WOODWAY: { start: {x: 1253597.2076536, y: 298938.0384100}, end: {x: 1262783.8743203, y: 285778.0384100} },
-        'MOUNTLAKE TERRACE': { start: {x: 1269216.7255107, y: 300638.4193624}, end: {x: 1287376.7255107, y: 284691.7526957} },
-        BRIER: { start: {x: 1281176.9889036, y: 299714.4446600}, end: {x: 1292416.9889036, y: 285554.4446600} },
-        SULTAN: { start: {x: 1393006.2314946, y: 326573.2282217}, end: {x: 1413326.2314946, y: 313306.5615550} },
-        'GOLD BAR': { start: {x: 1424682.84607795, y: 317197.5303050257}, end: {x: 1434397.90857795, y: 308048.613638359} },
-        INDEX: { start: {x: 1460800.215537593, y: 302078.94176432636}, end: {x: 1465096.453632831, y: 298779.12033575505} },
-        'LAKE STEVENS': { start: {x: 1319056.4835779, y: 381158.1684003}, end: {x: 1345776.4835779, y: 352611.5017336} },
-        DARRINGTON: { start: {x: 1447932.9454597, y: 466084.0562538}, end: {x: 1459639.6121263, y: 451617.3895871} },
+        SNOHOMISH:{ start:{x:1324268.0821190232, y:350804.9793392833}, end:{x:1335726.87378569, y:332597.7293392833} },
+        ARLINGTON:{ start:{x:1301377.4053758, y:446269.9415842}, end:{x:1335624.0720425, y:414663.2749175} },
+        MARYSVILLE:{ start:{x:1302400.1523996438, y:427973.16717942106}, end:{x:1328684.7047805963, y:374363.7767032307} },
+        EVERETT:{ start:{x:1282538.047, y:383300.631125 }, end:{x:1314675.6371785714, y:319250.18916071416 } },
+        BOTHELL:{ start:{x:1291714.8749815468, y:300659.55271042034}, end:{x:1312118.77081488, y:285826.531877087} },
+        STANWOOD:{ start:{x:1262517.2243287, y:464077.0229204}, end:{x:1279143.8909953, y:451357.0229204} },
+        LYNNWOOD:{ start:{x:1266997.8534813, y:318103.4906453}, end:{x:1292571.1868146, y:291703.4906453} },
+        'MILL CREEK':{ start:{x:1297991.74191126, y:324647.6231621667}, end:{x:1313934.4085779267, y:308659.6648288333} },
+        'GRANITE FALLS':{ start:{x:1352078.3701986, y:407368.1212113}, end:{x:1371558.3701986, y:391034.7878780} },
+        MUKILTEO:{ start:{x:1272670.2636002866, y:350924.6177286121}, end:{x:1285351.7874098106, y:322311.92963337427} },
+        MONROE:{ start:{x:1350639.2570856968, y:325820.4538095343}, end:{x:1370273.1945856968, y:307341.4538095343} },
+        EDMONDS:{ start:{x:1255669.095743157, y:317278.94987147086}, end:{x:1275563.2362193475, y:287318.84987147106} },
+        WOODWAY:{ start:{x:1253597.2076536, y:298938.0384100}, end:{x:1262783.8743203, y:285778.0384100} },
+        'MOUNTLAKE TERRACE':{ start:{x:1269216.7255107, y:300638.4193624}, end:{x:1287376.7255107, y:284691.7526957} },
+        BRIER:{ start:{x:1281176.9889036, y:299714.4446600}, end:{x:1292416.9889036, y:285554.4446600} },
+        SULTAN:{ start:{x:1393006.2314946, y:326573.2282217}, end:{x:1413326.2314946, y:313306.5615550} },
+        'GOLD BAR':{ start:{x:1424682.84607795, y:317197.5303050257}, end:{x:1434397.90857795, y:308048.613638359} },
+        INDEX:{ start:{x:1460800.215537593, y:302078.94176432636}, end:{x:1465096.453632831, y:298779.12033575505} },
+        'LAKE STEVENS':{ start:{x:1319056.4835779, y:381158.1684003}, end:{x:1345776.4835779, y:352611.5017336} },
+        DARRINGTON:{ start:{x:1447932.9454597, y:466084.0562538}, end:{x:1459639.6121263, y:451617.3895871} },
     };
-
-    var private_interstatesAndHighways = {
-        i_5: undefined,
-        i_405: undefined,
-        sr_9: undefined,
-        us_2: undefined,
-        sr_522: undefined,
-        sr_530: undefined
-    }
 
     return {
         cityCoordinatesInit: cityCoordinatesInit,
-        resizeSVGElement: resizeSVGElement,
-        resizeSvgCities: resizeSvgCities,
+        resizeOneSvgCity: resizeOneSvgCity,
+        resizeAllSvgCities: resizeAllSvgCities,
         getClientXYfromSP: getClientXYfromSP,
         boxZoom_city: boxZoom_city,
-        //svgCitiesMouseDown: svgCitiesMouseDown,
         svgCitiesSetOpacityToZero: svgCitiesSetOpacityToZero,
     };
 }()
